@@ -1,0 +1,33 @@
+@use './tokens' as tokens;
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+
+  color: tokens.$color-on-background;
+  background-color: tokens.$color-background;
+
+  font-family: tokens.$font-family-primary;
+  font-size: tokens.$font-size-body-medium;
+  line-height: 1.5;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
