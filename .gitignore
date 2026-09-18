@@ -22,3 +22,19 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Test and coverage output
+coverage
+
+# Operating system files
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+.cache
