@@ -38,8 +38,8 @@ $color-avatar-4: #ffc6ff;
 $color-avatar-5: #e8dff5;
 
 // Font families
-$font-family-primary: 'Inter', sans-serif;
-$font-family-secondary: 'Roboto', sans-serif;
+$font-family-primary: 'Inter Variable', sans-serif;
+$font-family-secondary: 'Roboto Variable', sans-serif;
 
 // Font sizes
 $font-size-display-large: 56px;
@@ -127,3 +127,10 @@ $duration-menu: 200ms;
 $layer-menu: 100;
 $layer-menu-controls: 101;
 $burger-line-offset: $size-05 + $border-width-medium;
+
+// Hero
+$hero-card-width: 640px;
+
+// Initial typography settings; verify against the selected Figma text layers.
+$line-height-heading: 1.1;
+$line-height-body: 1.5;
