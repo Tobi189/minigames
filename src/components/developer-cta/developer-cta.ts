@@ -1,9 +1,5 @@
 import './developer-cta.scss'
-
 import illustrationImage from '../../assets/illustration-side.png'
-
-const uploadIcon =
-  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></svg>'
 
 const createSubmitButton = (): HTMLButtonElement => {
   const button = document.createElement('button')
@@ -13,10 +9,8 @@ const createSubmitButton = (): HTMLButtonElement => {
   const icon = document.createElement('span')
   icon.className = 'developer-cta__button-icon'
   icon.setAttribute('aria-hidden', 'true')
-  icon.innerHTML = uploadIcon
 
   button.append(icon, 'Submit Form')
-
   return button
 }
 
