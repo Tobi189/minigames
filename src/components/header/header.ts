@@ -1,6 +1,6 @@
 import logoUrl from '../../assets/logo.svg'
 import './header.scss'
-import { createAuthModal } from '../auth-modal/auth-modal' // Update path if necessary
+import { createAuthModal } from '../auth-modal/auth-modal'
 
 export const createHeader = (): HTMLElement => {
   const header = document.createElement('header')
@@ -26,16 +26,27 @@ export const createHeader = (): HTMLElement => {
   const list = document.createElement('ul')
   list.className = 'header__links'
 
-  const labels = ['Home', 'Library', 'Tournaments', 'Community']
+  const navItems = [
+    { label: 'Home', href: '#' },
+    { label: 'Library', href: '#/library' },
+    { label: 'Tournaments', href: '#/tournaments' },
+    { label: 'Community', href: '#/community' },
+  ]
 
-  labels.forEach((label) => {
+  const currentHash = window.location.hash || '#'
+
+  navItems.forEach(({ label, href }) => {
     const item = document.createElement('li')
     const link = document.createElement('a')
 
     link.textContent = label
-    link.href = '#'
+    link.href = href
 
-    if (label === 'Home') {
+    const isCurrent =
+      (href === '#' && (currentHash === '' || currentHash === '#')) ||
+      (href !== '#' && currentHash.startsWith(href))
+
+    if (isCurrent) {
       link.setAttribute('aria-current', 'page')
     }
 
@@ -49,7 +60,6 @@ export const createHeader = (): HTMLElement => {
   login.type = 'button'
   login.className = 'header__button header__login'
   login.textContent = 'Log In'
-  // Add this listener:
   login.addEventListener('click', () => {
     document.body.appendChild(createAuthModal('login'))
   })
@@ -58,7 +68,6 @@ export const createHeader = (): HTMLElement => {
   signup.type = 'button'
   signup.className = 'header__button header__button--primary header__signup'
   signup.textContent = 'Sign Up'
-  // Add this listener:
   signup.addEventListener('click', () => {
     document.body.appendChild(createAuthModal('register'))
   })
@@ -68,7 +77,6 @@ export const createHeader = (): HTMLElement => {
   tabletSignup.className =
     'header__button header__button--primary header__tablet-signup'
   tabletSignup.textContent = 'Sign Up'
-  // Add this listener:
   tabletSignup.addEventListener('click', () => {
     document.body.appendChild(createAuthModal('register'))
   })
@@ -173,7 +181,6 @@ export const createHeader = (): HTMLElement => {
     syncMenuAccessibility()
   })
 
-  // Read responsive styles after the header is attached to the document.
   requestAnimationFrame(syncMenuAccessibility)
 
   return header

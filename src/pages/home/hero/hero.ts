@@ -20,7 +20,7 @@ export const createHero = (): HTMLElement => {
 
   const browseLink = document.createElement('a')
   browseLink.className = 'hero__link'
-  browseLink.href = '#'
+  browseLink.href = '#/library'
   browseLink.textContent = 'Browse Library'
 
   card.append(heading, description, browseLink)
