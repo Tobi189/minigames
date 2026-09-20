@@ -1,0 +1,109 @@
+@use '../../styles/tokens' as tokens;
+
+.game-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: tokens.$size-2;
+  overflow-y: auto;
+}
+
+.game-modal {
+  background-color: tokens.$color-white;
+  border-radius: tokens.$corner-large;
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+
+  &__header {
+    height: 200px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    padding: tokens.$size-2;
+  }
+
+  &__close {
+    position: absolute;
+    top: tokens.$size-2;
+    right: tokens.$size-2;
+    background: rgba(0, 0, 0, 0.5);
+    color: tokens.$color-white;
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+  }
+
+  &__body {
+    padding: tokens.$size-4;
+    display: flex;
+    flex-direction: column;
+    gap: tokens.$size-3;
+  }
+
+  &__stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: tokens.$size-1;
+
+    .stat-box {
+      border: 1px solid cyan;
+      border-radius: tokens.$corner-small;
+      padding: tokens.$size-1;
+      text-align: center;
+      .label {
+        display: block;
+        font-size: 0.75rem;
+        color: gray;
+      }
+      strong {
+        font-size: 0.85rem;
+      }
+    }
+  }
+
+  &__actions {
+    display: flex;
+    gap: tokens.$size-2;
+    .btn {
+      flex: 1;
+      padding: tokens.$size-2;
+      border-radius: tokens.$corner-medium;
+    }
+  }
+
+  &__records {
+    list-style: none;
+    padding: 0;
+    li {
+      display: flex;
+      justify-content: space-between;
+      padding: tokens.$size-1 0;
+      border-bottom: 1px solid cyan;
+    }
+  }
+
+  .comment-item {
+    display: flex;
+    gap: tokens.$size-2;
+    margin-top: tokens.$size-2;
+    &__avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #eee;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+  }
+}

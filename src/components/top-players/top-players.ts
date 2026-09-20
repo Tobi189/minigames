@@ -1,4 +1,6 @@
 import './top-players.scss'
+import { createGameModal } from '../game-modal/game-modal'
+import { MOCK_GAMES } from '../../types/games'
 
 type Player = {
   rank: number
@@ -139,11 +141,25 @@ const createPlayerRow = (player: Player): HTMLTableRowElement => {
   const favorite = document.createElement('td')
   favorite.className = 'leaderboard__favorite'
 
-  favorite.append(
-    createTextElement('span', 'leaderboard__game-badge', player.favoriteGame),
+  const gameBadge = createTextElement(
+    'span',
+    'leaderboard__game-badge',
+    player.favoriteGame,
   )
+  favorite.append(gameBadge)
 
   row.append(rank, playerCell, gamesPlayed, score, streak, favorite)
+
+  // --- Modal Click Trigger ---
+  // Attach click handler to the game badge pill (or the entire row)
+  row.style.cursor = 'pointer'
+  row.addEventListener('click', () => {
+    // Find matching game or default to mock data
+    const matchedGame =
+      MOCK_GAMES.find((g) => g.title === player.favoriteGame) || MOCK_GAMES[0]
+    const modalOverlay = createGameModal(matchedGame)
+    document.body.append(modalOverlay)
+  })
 
   return row
 }
