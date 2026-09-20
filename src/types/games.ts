@@ -1,6 +1,7 @@
-import tukoniCover from '../assets/islanders.png' // or your tukoni cover image
+import type { Game } from './game'
+import tukoniCover from '../assets/hero-image-header-block.png'
 
-export const MOCK_GAMES = [
+export const MOCK_GAMES: Game[] = [
   {
     id: 'tukoni-forest-keepers',
     title: 'Tukoni: Forest Keepers',

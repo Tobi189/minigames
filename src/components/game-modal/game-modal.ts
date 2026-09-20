@@ -16,7 +16,13 @@ export const createGameModal = (game: Game): HTMLElement => {
   const closeBtn = document.createElement('button')
   closeBtn.className = 'game-modal__close'
   closeBtn.innerHTML = '&#x2715;'
-  closeBtn.onclick = (): void => overlay.remove()
+
+  const closeModal = (): void => {
+    overlay.remove()
+    document.body.style.overflow = ''
+  }
+
+  closeBtn.onclick = closeModal
 
   header.append(closeBtn)
 
@@ -110,9 +116,12 @@ export const createGameModal = (game: Game): HTMLElement => {
   modal.append(header, body)
   overlay.append(modal)
 
+  // Lock body scroll behind modal
+  document.body.style.overflow = 'hidden'
+
   // Close when clicking outside content
   overlay.onclick = (e: MouseEvent): void => {
-    if (e.target === overlay) overlay.remove()
+    if (e.target === overlay) closeModal()
   }
 
   return overlay
