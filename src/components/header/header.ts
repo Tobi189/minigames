@@ -1,5 +1,6 @@
 import logoUrl from '../../assets/logo.svg'
 import './header.scss'
+import { createAuthModal } from '../auth-modal/auth-modal' // Update path if necessary
 
 export const createHeader = (): HTMLElement => {
   const header = document.createElement('header')
@@ -48,17 +49,29 @@ export const createHeader = (): HTMLElement => {
   login.type = 'button'
   login.className = 'header__button header__login'
   login.textContent = 'Log In'
+  // Add this listener:
+  login.addEventListener('click', () => {
+    document.body.appendChild(createAuthModal('login'))
+  })
 
   const signup = document.createElement('button')
   signup.type = 'button'
   signup.className = 'header__button header__button--primary header__signup'
   signup.textContent = 'Sign Up'
+  // Add this listener:
+  signup.addEventListener('click', () => {
+    document.body.appendChild(createAuthModal('register'))
+  })
 
   const tabletSignup = document.createElement('button')
   tabletSignup.type = 'button'
   tabletSignup.className =
     'header__button header__button--primary header__tablet-signup'
   tabletSignup.textContent = 'Sign Up'
+  // Add this listener:
+  tabletSignup.addEventListener('click', () => {
+    document.body.appendChild(createAuthModal('register'))
+  })
 
   const burger = document.createElement('button')
   burger.type = 'button'
