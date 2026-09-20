@@ -1,0 +1,283 @@
+@use '../../styles/tokens' as tokens;
+@use '../../styles/mixins' as mixins;
+
+.game-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: tokens.$size-2;
+  overflow-y: auto;
+  background-color: rgba(tokens.$color-black, 0.6);
+}
+
+.game-modal {
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: tokens.$corner-large;
+  background-color: tokens.$color-white;
+  box-shadow: tokens.$shadow-soft;
+
+  &__header {
+    position: relative;
+    height: 200px;
+    background-position: center;
+    background-size: cover;
+  }
+
+  &__close {
+    position: absolute;
+    top: tokens.$size-2;
+    right: tokens.$size-2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: tokens.$corner-full;
+    color: tokens.$color-white;
+    background-color: rgba(tokens.$color-black, 0.5);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: rgba(tokens.$color-black, 0.8);
+    }
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: tokens.$size-4;
+    padding: tokens.$size-5;
+  }
+
+  &__title {
+    margin: 0;
+    color: tokens.$color-on-primary;
+    font-size: tokens.$font-size-headline-medium;
+    font-weight: tokens.$font-weight-bold;
+  }
+
+  &__meta {
+    display: flex;
+    gap: tokens.$size-4;
+    color: tokens.$color-on-background;
+    font-size: tokens.$font-size-body-medium;
+
+    span {
+      display: flex;
+      align-items: center;
+      gap: tokens.$size-1;
+    }
+  }
+
+  &__desc {
+    margin: 0;
+    color: tokens.$color-on-background;
+    font-size: tokens.$font-size-body-small;
+    line-height: tokens.$line-height-body;
+  }
+
+  &__stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: tokens.$size-2;
+
+    .stat-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: tokens.$size-1;
+      padding: tokens.$size-2;
+      border: tokens.$border-width-thin solid tokens.$color-outline;
+      border-radius: tokens.$corner-small;
+
+      .label {
+        color: tokens.$color-on-background-low;
+        font-size: tokens.$font-size-label-medium;
+      }
+
+      strong {
+        color: tokens.$color-on-primary;
+        font-size: tokens.$font-size-label-large;
+        font-weight: tokens.$font-weight-bold;
+      }
+    }
+  }
+
+  &__actions {
+    display: flex;
+    gap: tokens.$size-3;
+
+    .btn {
+      display: flex;
+      flex: 1;
+      align-items: center;
+      justify-content: center;
+      gap: tokens.$size-1;
+      padding: tokens.$button-large-padding-block
+        tokens.$button-large-padding-inline;
+      border-radius: tokens.$corner-small;
+      font-size: tokens.$font-size-label-large;
+      font-weight: tokens.$font-weight-bold;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &--primary {
+        border: tokens.$border-width-thin solid tokens.$color-on-primary;
+        color: tokens.$color-on-primary;
+        background-color: tokens.$color-primary;
+
+        &:hover {
+          background-color: tokens.$color-primary-high;
+        }
+      }
+
+      &--outline {
+        border: tokens.$border-width-thin solid tokens.$color-on-primary;
+        color: tokens.$color-on-primary;
+        background-color: tokens.$color-white;
+
+        &:hover {
+          background-color: tokens.$color-surface;
+        }
+      }
+    }
+  }
+
+  &__section {
+    h3 {
+      display: flex;
+      align-items: center;
+      gap: tokens.$size-2;
+      margin: 0 0 tokens.$size-3;
+      color: tokens.$color-on-primary;
+      font-size: tokens.$font-size-label-large;
+    }
+  }
+
+  &__records {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    li {
+      display: flex;
+      justify-content: space-between;
+      padding: tokens.$size-2 0;
+      border-bottom: tokens.$border-width-thin solid tokens.$color-outline;
+      color: tokens.$color-on-primary;
+      font-size: tokens.$font-size-body-small;
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+  }
+
+  &__comment-input {
+    display: flex;
+    gap: tokens.$size-2;
+    margin-bottom: tokens.$size-3;
+
+    input {
+      flex: 1;
+      padding: tokens.$size-2 tokens.$size-3;
+      border: tokens.$border-width-thin solid tokens.$color-outline;
+      border-radius: tokens.$corner-small;
+      font-family: inherit;
+      font-size: tokens.$font-size-body-small;
+
+      &:focus {
+        border-color: tokens.$color-tertiary;
+        outline: none;
+      }
+    }
+
+    .btn--send {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 tokens.$size-4;
+      border: tokens.$border-width-thin solid tokens.$color-on-primary;
+      border-radius: tokens.$corner-small;
+      color: tokens.$color-on-primary;
+      background-color: tokens.$color-primary;
+      cursor: pointer;
+
+      &:hover {
+        background-color: tokens.$color-primary-high;
+      }
+    }
+  }
+
+  &__comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: tokens.$size-3;
+  }
+
+  .comment-item {
+    display: flex;
+    gap: tokens.$size-3;
+
+    &__avatar {
+      display: flex;
+      flex: 0 0 tokens.$size-5;
+      align-items: center;
+      justify-content: center;
+      width: tokens.$size-5;
+      height: tokens.$size-5;
+      border: tokens.$border-width-thin solid tokens.$color-on-primary;
+      border-radius: tokens.$corner-full;
+      background-color: tokens.$color-secondary;
+      color: tokens.$color-on-primary;
+      font-size: tokens.$font-size-body-small;
+      font-weight: tokens.$font-weight-bold;
+    }
+
+    &__content {
+      display: flex;
+      flex-direction: column;
+      gap: tokens.$size-05;
+
+      p {
+        margin: 0;
+        color: tokens.$color-on-background;
+        font-size: tokens.$font-size-body-small;
+        line-height: tokens.$line-height-body;
+      }
+    }
+
+    &__header {
+      display: flex;
+      align-items: center;
+      gap: tokens.$size-2;
+      color: tokens.$color-on-primary;
+      font-size: tokens.$font-size-body-small;
+
+      small {
+        color: tokens.$color-on-background-low;
+        font-size: tokens.$font-size-label-small;
+      }
+    }
+  }
+}
+
+@include mixins.tablet-and-down {
+  .game-modal {
+    &__stats {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    &__actions {
+      flex-direction: column;
+    }
+  }
+}

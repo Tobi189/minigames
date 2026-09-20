@@ -1,0 +1,260 @@
+@use '../../styles/tokens';
+
+.top-players {
+  width: 100%;
+  max-width: 1920px;
+  margin-inline: auto;
+  padding: 40px clamp(16px, 6.25vw, 120px);
+  background-color: tokens.$color-background;
+
+  &__title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 39px;
+    margin: 0 0 40px;
+    color: tokens.$color-on-primary;
+    font-size: 24px;
+    line-height: 1.2;
+
+    &::before {
+      width: 4px;
+      height: 24px;
+      border-radius: 9999px;
+      background-color: tokens.$color-primary;
+      content: '';
+    }
+  }
+}
+
+.leaderboard {
+  overflow: hidden;
+  border: 3px solid tokens.$color-on-primary;
+  border-radius: 16px;
+  background-color: tokens.$color-white;
+
+  &__table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    color: tokens.$color-on-primary;
+  }
+
+  thead {
+    color: tokens.$color-white;
+    background-color: tokens.$color-tertiary;
+  }
+
+  thead tr {
+    height: 67px;
+  }
+
+  tbody tr {
+    height: 72px;
+  }
+
+  tbody tr:nth-child(odd) {
+    background-color: tokens.$color-background;
+  }
+
+  tbody tr:nth-child(even) {
+    background-color: tokens.$color-white;
+  }
+
+  tbody tr:not(:last-child) {
+    border-bottom: 1px solid tokens.$color-outline;
+  }
+
+  th,
+  td {
+    padding: 16px 24px;
+    overflow: hidden;
+    font-size: 14px;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  th {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  &__rank {
+    width: 8%;
+  }
+
+  &__player {
+    width: 22%;
+    text-align: left;
+  }
+
+  &__games {
+    width: 16%;
+  }
+
+  &__score {
+    width: 19%;
+  }
+
+  &__streak {
+    width: 19%;
+  }
+
+  &__favorite {
+    width: 16%;
+  }
+
+  tbody tr:first-child &__rank {
+    color: tokens.$color-primary-high;
+    font-weight: 700;
+  }
+
+  &__player-content {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    gap: 16px;
+  }
+
+  &__avatar {
+    display: grid;
+    flex: 0 0 40px;
+    width: 40px;
+    height: 40px;
+    place-items: center;
+    border: 1px solid tokens.$color-on-primary;
+    border-radius: 50%;
+    font-size: 12px;
+
+    &--yellow {
+      background-color: #ffd02b;
+    }
+
+    &--green {
+      background-color: #a3e2c9;
+    }
+
+    &--blue {
+      background-color: #bce3ff;
+    }
+
+    &--pink {
+      background-color: #ffc6ff;
+    }
+
+    &--purple {
+      background-color: #e8dff5;
+    }
+  }
+
+  &__player-name {
+    overflow: hidden;
+    font-weight: 500;
+    text-overflow: ellipsis;
+  }
+
+  &__flame {
+    margin-right: 4px;
+  }
+
+  &__game-badge {
+    display: inline-block;
+    max-width: 100%;
+    padding: 4px 8px;
+    overflow: hidden;
+    border: 1px solid tokens.$color-on-primary;
+    border-radius: 9999px;
+    font-size: 10px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__mobile-value {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .top-players {
+    padding-block: 32px;
+
+    &__title {
+      margin-bottom: 24px;
+      font-size: 20px;
+    }
+
+    &__title-suffix {
+      display: none;
+    }
+  }
+
+  .leaderboard {
+    border-width: 2px;
+    border-radius: 12px;
+
+    thead tr {
+      height: 48px;
+    }
+
+    tbody tr {
+      height: 56px;
+    }
+
+    tbody tr:nth-child(n + 4) {
+      display: none;
+    }
+
+    th,
+    td {
+      padding: 8px;
+      font-size: 12px;
+    }
+
+    th {
+      font-size: 10px;
+    }
+
+    &__rank {
+      width: 14%;
+    }
+
+    &__player {
+      width: 42%;
+    }
+
+    &__score {
+      width: 24%;
+    }
+
+    &__streak {
+      width: 20%;
+    }
+
+    &__games,
+    &__favorite {
+      display: none;
+    }
+
+    td#{&}__player {
+      height: 56px;
+      gap: 8px;
+    }
+
+    &__avatar {
+      flex-basis: 28px;
+      width: 28px;
+      height: 28px;
+      font-size: 9px;
+    }
+
+    &__desktop-value {
+      display: none;
+    }
+
+    &__mobile-value {
+      display: inline;
+    }
+  }
+}

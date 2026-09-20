@@ -38,8 +38,8 @@ $color-avatar-4: #ffc6ff;
 $color-avatar-5: #e8dff5;
 
 // Font families
-$font-family-primary: 'Inter', sans-serif;
-$font-family-secondary: 'Roboto', sans-serif;
+$font-family-primary: 'Inter Variable', sans-serif;
+$font-family-secondary: 'Roboto Variable', sans-serif;
 
 // Font sizes
 $font-size-display-large: 56px;
@@ -107,3 +107,38 @@ $button-icon-padding: 8px;
 $shadow-level-1: 4px 4px 0 $color-on-primary;
 $shadow-level-2: 6px 6px 0 $color-on-primary;
 $shadow-level-3: 8px 8px 0 $color-on-primary;
+
+// Layout
+$viewport-mobile: 375px;
+$breakpoint-tablet: 768px;
+$layout-max-width: 1920px;
+
+// Header
+$header-logo-width: 150px;
+$border-width-thin: 1px;
+
+// Chosen transition between the phone and tablet header layouts.
+$breakpoint-phone: 480px;
+
+$border-width-medium: 2px;
+
+// Mobile menu
+$duration-menu: 200ms;
+$layer-menu: 100;
+$layer-menu-controls: 101;
+$burger-line-offset: $size-05 + $border-width-medium;
+
+// Hero
+$hero-card-width: 640px;
+
+// Initial typography settings; verify against the selected Figma text layers.
+$line-height-heading: 1.1;
+$line-height-body: 1.5;
+
+// Developer CTA
+$developer-cta-illustration-width: 680px;
+$developer-cta-card-width: 960px;
+$developer-cta-text-max-width: 600px;
+$developer-cta-icon-size: 20px;
+
+$shadow-soft: 0 4px 24px rgba($color-black, 0.12);
