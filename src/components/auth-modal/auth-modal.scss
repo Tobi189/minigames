@@ -1,0 +1,179 @@
+@use '../../styles/tokens' as tokens;
+@use '../../styles/mixins' as mixins;
+
+.auth-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: tokens.$size-2;
+  background-color: rgba(tokens.$color-black, 0.6);
+  backdrop-filter: blur(2px);
+  overflow-y: auto;
+}
+
+.auth-modal {
+  width: 100%;
+  max-width: 420px;
+  padding: 32px;
+  border: 3px solid tokens.$color-on-primary;
+  border-radius: 24px;
+  background-color: tokens.$color-white;
+  box-shadow: tokens.$shadow-soft;
+  color: tokens.$color-on-primary;
+
+  &__tabs {
+    display: flex;
+    width: 100%;
+    margin-bottom: 24px;
+    border: 1px solid tokens.$color-on-primary;
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  &__tab {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    background: transparent;
+    color: tokens.$color-on-primary;
+    font-size: tokens.$font-size-label-medium;
+    font-weight: tokens.$font-weight-bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &.active {
+      background-color: tokens.$color-on-primary;
+      color: tokens.$color-white;
+    }
+  }
+
+  &__header {
+    margin-bottom: 24px;
+    text-align: center;
+  }
+
+  &__title {
+    margin: 0 0 8px;
+    font-size: 24px;
+    font-weight: tokens.$font-weight-bold;
+  }
+
+  &__subtitle {
+    margin: 0;
+    color: tokens.$color-on-background-low;
+    font-size: tokens.$font-size-body-small;
+  }
+
+  .auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    &__group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    label {
+      font-size: tokens.$font-size-label-small;
+      font-weight: tokens.$font-weight-bold;
+    }
+
+    input {
+      padding: 12px 16px;
+      border: 1px solid tokens.$color-outline;
+      border-radius: tokens.$corner-small;
+      font-family: inherit;
+      font-size: tokens.$font-size-body-small;
+      color: tokens.$color-on-primary;
+
+      &::placeholder {
+        color: tokens.$color-on-background-low;
+      }
+
+      &:focus {
+        border-color: tokens.$color-tertiary;
+        outline: none;
+      }
+    }
+
+    &__forgot {
+      margin-top: -8px;
+      text-align: right;
+      font-size: 12px;
+
+      a {
+        color: tokens.$color-on-primary;
+        text-decoration: none;
+        font-weight: tokens.$font-weight-bold;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+  }
+
+  &__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 24px;
+
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 14px;
+      border-radius: tokens.$corner-small;
+      font-size: tokens.$font-size-label-large;
+      font-weight: tokens.$font-weight-bold;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &--primary {
+        border: 1px solid tokens.$color-on-primary;
+        color: tokens.$color-on-primary;
+        background-color: tokens.$color-primary;
+
+        &:hover {
+          background-color: tokens.$color-primary-high;
+        }
+      }
+
+      &--social {
+        border: 1px solid tokens.$color-on-primary;
+        color: tokens.$color-on-primary;
+        background-color: tokens.$color-white;
+
+        &:hover {
+          background-color: tokens.$color-surface;
+        }
+      }
+    }
+  }
+
+  &__footer {
+    margin-top: 24px;
+    text-align: center;
+    font-size: 12px;
+    color: tokens.$color-on-background-low;
+
+    a {
+      color: tokens.$color-on-primary;
+      font-weight: tokens.$font-weight-bold;
+      text-decoration: none;
+      cursor: pointer;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+}

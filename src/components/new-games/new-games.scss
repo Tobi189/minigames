@@ -1,0 +1,258 @@
+@use '../../styles/tokens';
+
+.new-games {
+  width: 100%;
+  max-width: 1920px;
+  margin-inline: auto;
+  padding: 40px clamp(16px, 6.25vw, 120px);
+  overflow: hidden;
+  background-color: tokens.$color-background;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 48px;
+    margin-bottom: 32px;
+  }
+
+  &__title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    color: tokens.$color-on-primary;
+    font-size: 24px;
+    line-height: 1.2;
+
+    &::before {
+      width: 4px;
+      height: 24px;
+      border-radius: 9999px;
+      background-color: tokens.$color-primary;
+      content: '';
+    }
+  }
+
+  &__controls {
+    display: flex;
+    gap: 16px;
+  }
+
+  &__track {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+    height: clamp(168px, 35vw, 392px);
+    padding: 0 8px 8px 0;
+    overflow: hidden;
+  }
+}
+
+.carousel-button {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  place-items: center;
+  border: 2px solid tokens.$color-on-primary;
+  border-radius: 50%;
+  color: tokens.$color-on-primary;
+  background-color: tokens.$color-white;
+  cursor: pointer;
+
+  &--next {
+    background-color: tokens.$color-primary;
+  }
+
+  &:hover {
+    background-color: tokens.$color-primary-low;
+  }
+
+  &:focus-visible {
+    outline: 3px solid tokens.$color-tertiary;
+    outline-offset: 3px;
+  }
+
+  &__icon {
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1;
+  }
+}
+
+.game-card {
+  position: relative;
+  flex: none;
+  height: calc(100% - 8px);
+  overflow: hidden;
+  border: 2px solid tokens.$color-on-primary;
+  border-radius: 16px;
+  background-color: tokens.$color-on-primary;
+  box-shadow: 8px 8px 0 tokens.$color-on-primary;
+
+  &--peek {
+    flex-basis: calc((100% - 32px) * 0.073);
+  }
+
+  &--side {
+    flex-basis: calc((100% - 32px) * 0.1776);
+  }
+
+  &--featured {
+    flex-basis: calc((100% - 32px) * 0.4988);
+  }
+
+  &__image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  &::after {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 28%;
+    background: linear-gradient(
+      to bottom,
+      rgb(0 0 0 / 0%) 0%,
+      rgb(0 0 0 / 40%) 17%,
+      rgb(0 0 0 / 85%) 46%,
+      rgb(0 0 0 / 85%) 100%
+    );
+    pointer-events: none;
+    content: '';
+  }
+
+  &__content {
+    position: absolute;
+    z-index: 1;
+    right: 16px;
+    bottom: 16px;
+    left: 16px;
+    color: tokens.$color-white;
+  }
+
+  &__title {
+    margin: 0 0 8px;
+    overflow: hidden;
+    font-size: 16px;
+    line-height: 1.2;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &--featured &__title {
+    font-size: 20px;
+  }
+
+  &--peek &__content {
+    display: none;
+  }
+
+  &__details {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  &__rating span {
+    color: tokens.$color-primary;
+  }
+
+  &__likes span {
+    color: tokens.$color-like;
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 900px) {
+  .new-games {
+    padding-block: 32px;
+
+    &__header {
+      margin-bottom: 24px;
+    }
+
+    &__track {
+      height: clamp(168px, 35vw, 270px);
+    }
+  }
+
+  .game-card {
+    &--peek {
+      display: none;
+    }
+
+    &--side {
+      flex-basis: 15%;
+    }
+
+    &--featured {
+      flex-basis: calc(70% - 16px);
+    }
+
+    &--side &__content {
+      display: none;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .new-games {
+    padding-block: 24px;
+
+    &__title {
+      font-size: 20px;
+
+      &::before {
+        height: 20px;
+      }
+    }
+
+    &__controls {
+      gap: 8px;
+    }
+
+    &__track {
+      height: 168px;
+    }
+  }
+
+  .carousel-button {
+    width: 40px;
+    height: 40px;
+
+    &__icon {
+      font-size: 20px;
+    }
+  }
+
+  .game-card {
+    border-radius: 12px;
+
+    &--side {
+      flex-basis: 14%;
+    }
+
+    &--featured {
+      flex-basis: calc(72% - 16px);
+    }
+
+    &__content {
+      right: 12px;
+      bottom: 12px;
+      left: 12px;
+    }
+
+    &--featured &__title {
+      font-size: 14px;
+    }
+  }
+}
