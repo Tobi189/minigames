@@ -29,8 +29,8 @@ export const createHeader = (): HTMLElement => {
   const navItems = [
     { label: 'Home', href: '#' },
     { label: 'Library', href: '#/library' },
-    { label: 'Tournaments', href: '#/tournaments' },
-    { label: 'Community', href: '#/community' },
+    { label: 'Tournaments', href: '#' },
+    { label: 'Community', href: '#' },
   ]
 
   const currentHash = window.location.hash || '#'
