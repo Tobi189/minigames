@@ -31,3 +31,13 @@ svg {
   display: block;
   max-width: 100%;
 }
+
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app__main {
+  flex: 1;
+}
