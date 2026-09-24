@@ -17,7 +17,7 @@ const navGroups: NavGroup[] = [
     title: 'Explore',
     links: [
       { label: 'Home', href: '#' },
-      { label: 'Library', href: '#' },
+      { label: 'Library', href: '#/library' },
       { label: 'Categories', href: '#' },
       { label: 'Tournaments', href: '#' },
     ],
@@ -142,7 +142,7 @@ export const createFooter = (): HTMLElement => {
 
   const schoolLink = document.createElement('a')
   schoolLink.className = 'footer__badge-link'
-  schoolLink.href = 'https://rs.school'
+  schoolLink.href = 'https://rs.school/courses/short-track'
   schoolLink.target = '_blank'
   schoolLink.rel = 'noopener noreferrer'
 
@@ -157,7 +157,9 @@ export const createFooter = (): HTMLElement => {
 
   const sourceLink = document.createElement('a')
   sourceLink.className = 'footer__badge-link'
-  sourceLink.href = '#'
+  sourceLink.href = 'https://github.com/Tobi189'
+  sourceLink.target = '_blank'
+  sourceLink.rel = 'noopener noreferrer'
 
   const sourceIcon = document.createElement('img')
   sourceIcon.src = codeIcon

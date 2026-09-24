@@ -1,31 +1,52 @@
+import { createFooter } from '../components/footer/footer'
 import { createHeader } from '../components/header/header'
 import { createHomePage } from '../pages/home/home-page'
 import { createLibraryPage } from '../pages/library/library-page'
 
+const HOME_ROUTE = '#'
+const LIBRARY_ROUTE = '#/library'
+
+const updateActiveNavigation = (header: HTMLElement): void => {
+  const currentRoute =
+    window.location.hash === LIBRARY_ROUTE ? LIBRARY_ROUTE : HOME_ROUTE
+
+  header
+    .querySelectorAll<HTMLAnchorElement>('.header__links a')
+    .forEach((link) => {
+      if (link.getAttribute('href') === currentRoute) {
+        link.setAttribute('aria-current', 'page')
+      } else {
+        link.removeAttribute('aria-current')
+      }
+    })
+}
+
 export const createApp = (): HTMLElement => {
-  const appContainer = document.createElement('div')
+  const app = document.createElement('div')
+  app.className = 'app'
 
   const header = createHeader()
-  const mainContent = document.createElement('div')
 
-  appContainer.append(header, mainContent)
+  const main = document.createElement('main')
+  main.className = 'app__main'
+  main.id = 'main-content'
+
+  const footer = createFooter()
 
   const renderRoute = (): void => {
-    // Clear out whatever is currently on the screen below the header
-    mainContent.innerHTML = ''
-    const hash = window.location.hash
+    const page =
+      window.location.hash === LIBRARY_ROUTE
+        ? createLibraryPage()
+        : createHomePage()
 
-    if (hash === '#/library') {
-      mainContent.append(createLibraryPage())
-    } else {
-      // Default fallback is the Home page
-      mainContent.append(createHomePage())
-    }
+    main.replaceChildren(page)
+    updateActiveNavigation(header)
   }
 
-  // Listen for URL changes and trigger the initial render
   window.addEventListener('hashchange', renderRoute)
+
+  app.append(header, main, footer)
   renderRoute()
 
-  return appContainer
+  return app
 }
