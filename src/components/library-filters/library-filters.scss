@@ -1,0 +1,89 @@
+@use '../../styles/tokens';
+@use '../../styles/mixins';
+
+.library-filters {
+  display: flex;
+  align-items: center;
+
+  width: 100%;
+  min-height: tokens.$library-filters-height-desktop;
+  padding-inline: tokens.$size-15;
+
+  &__categories {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: tokens.$size-2;
+
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  &__chip {
+    flex-shrink: 0;
+
+    min-height: tokens.$library-chip-height;
+    padding-inline: tokens.$size-2;
+
+    border: tokens.$border-width-thin solid tokens.$color-on-primary;
+    border-radius: tokens.$corner-full;
+
+    background-color: transparent;
+    color: tokens.$color-on-primary;
+
+    font-size: tokens.$font-size-label-large;
+    font-weight: tokens.$font-weight-bold;
+    line-height: normal;
+    cursor: pointer;
+
+    transition:
+      background-color 150ms ease,
+      border-color 150ms ease;
+
+    &:hover {
+      background-color: tokens.$color-surface;
+    }
+
+    &:focus-visible {
+      outline: tokens.$border-width-medium solid tokens.$color-tertiary;
+      outline-offset: tokens.$border-width-medium;
+    }
+
+    &--active {
+      background-color: tokens.$color-primary;
+
+      &:hover {
+        background-color: tokens.$color-primary-low;
+      }
+    }
+  }
+
+  @include mixins.tablet-and-down {
+    align-items: stretch;
+
+    min-height: tokens.$library-filters-height-tablet;
+    padding: tokens.$library-filters-padding-block tokens.$size-5;
+
+    &__categories {
+      width: 100%;
+    }
+  }
+
+  @media (max-width: tokens.$breakpoint-phone) {
+    min-height: tokens.$library-filters-height-mobile;
+    padding-inline: tokens.$size-2;
+
+    &__chip {
+      min-height: tokens.$library-chip-height-mobile;
+
+      font-size: tokens.$font-size-label-medium;
+    }
+  }
+}
