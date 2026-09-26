@@ -15,6 +15,18 @@ const categories: Category[] = [
   { slug: 'arcade', label: 'Arcade' },
 ]
 
+type SortOption = {
+  value: string
+  label: string
+}
+
+const sortOptions: SortOption[] = [
+  { value: 'rating-descending', label: 'Sort by: Rating ↓' },
+  { value: 'rating-ascending', label: 'Sort by: Rating ↑' },
+  { value: 'name-ascending', label: 'Sort by: Name A→Z' },
+  { value: 'name-descending', label: 'Sort by: Name Z→A' },
+]
+
 export const createLibraryFilters = (): HTMLElement => {
   const section = document.createElement('section')
   section.className = 'library-filters'
@@ -24,6 +36,28 @@ export const createLibraryFilters = (): HTMLElement => {
   categoryList.className = 'library-filters__categories'
   categoryList.setAttribute('role', 'group')
   categoryList.setAttribute('aria-label', 'Game categories')
+
+  const sort = document.createElement('div')
+  sort.className = 'library-filters__sort'
+
+  const sortSelect = document.createElement('select')
+  sortSelect.className = 'library-filters__sort-select'
+
+  sortOptions.forEach(({ value, label }) => {
+    const option = document.createElement('option')
+
+    option.value = value
+    option.textContent = label
+
+    sortSelect.append(option)
+  })
+
+  const sortArrow = document.createElement('span')
+  sortArrow.className = 'library-filters__sort-arrow'
+  sortArrow.textContent = '⌄'
+  sortArrow.setAttribute('aria-hidden', 'true')
+
+  sort.append(sortSelect, sortArrow)
 
   const categoryButtons = categories.map(({ slug, label }) => {
     const button = document.createElement('button')
@@ -55,7 +89,7 @@ export const createLibraryFilters = (): HTMLElement => {
   })
 
   categoryList.append(...categoryButtons)
-  section.append(categoryList)
+  section.append(categoryList, sort)
 
   return section
 }
