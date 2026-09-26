@@ -11,9 +11,11 @@
 
   &__categories {
     display: flex;
+    align-items: center;
     flex-wrap: nowrap;
     gap: tokens.$size-2;
 
+    height: tokens.$library-chip-height;
     min-width: 0;
     max-width: 100%;
     overflow-x: auto;
@@ -27,11 +29,17 @@
   }
 
   &__chip {
+    display: inline-flex;
     flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
 
-    min-height: tokens.$library-chip-height;
-    padding-inline: tokens.$size-2;
+    height: tokens.$library-chip-height;
+    min-height: 0;
+    max-height: tokens.$library-chip-height;
+    padding: 0 tokens.$size-2;
 
+    appearance: none;
     border: tokens.$border-width-thin solid tokens.$color-on-primary;
     border-radius: tokens.$corner-full;
 
@@ -40,7 +48,7 @@
 
     font-size: tokens.$font-size-label-large;
     font-weight: tokens.$font-weight-bold;
-    line-height: normal;
+    line-height: 1;
     cursor: pointer;
 
     transition:
@@ -66,13 +74,19 @@
   }
 
   @include mixins.tablet-and-down {
+    flex-direction: column;
     align-items: stretch;
+    gap: tokens.$size-2;
 
     min-height: tokens.$library-filters-height-tablet;
-    padding: tokens.$library-filters-padding-block tokens.$size-5;
+    padding: tokens.$size-2 tokens.$size-5;
 
     &__categories {
+      flex: 0 0 tokens.$library-chip-height;
+      gap: tokens.$size-1;
+
       width: 100%;
+      height: tokens.$library-chip-height;
     }
   }
 
@@ -80,10 +94,16 @@
     min-height: tokens.$library-filters-height-mobile;
     padding-inline: tokens.$size-2;
 
-    &__chip {
-      min-height: tokens.$library-chip-height-mobile;
+    &__categories {
+      flex-basis: tokens.$library-chip-height-mobile;
+      height: tokens.$library-chip-height-mobile;
+    }
 
-      font-size: tokens.$font-size-label-medium;
+    &__chip {
+      height: tokens.$library-chip-height-mobile;
+      max-height: tokens.$library-chip-height-mobile;
+
+      font-size: tokens.$font-size-label-compact;
     }
   }
 }
