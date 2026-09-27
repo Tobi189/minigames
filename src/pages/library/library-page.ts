@@ -1,17 +1,18 @@
-import { createFooter } from '../../components/footer/footer'
+import { createLibraryIntro } from '../../components/library-intro/library-intro'
+import { createLibraryFilters } from '../../components/library-filters/library-filters'
+import { createLibraryGames } from '../../components/library-games/library-games'
+import { createLibraryPagination } from '../../components/library-pagination/library-pagination'
 
 export const createLibraryPage = (): HTMLElement => {
-  const container = document.createElement('div')
-  container.className = 'library-page'
+  const page = document.createElement('div')
+  page.className = 'library-page'
 
-  // Empty main element just to keep the page structure
-  // and push the footer down to the bottom of the screen
-  const main = document.createElement('main')
-  main.className = 'library-page__main'
-  main.style.minHeight = '70vh'
+  page.append(
+    createLibraryIntro(),
+    createLibraryFilters(),
+    createLibraryGames(),
+    createLibraryPagination(),
+  )
 
-  // Append ONLY the empty middle part and the footer
-  container.append(main, createFooter())
-
-  return container
+  return page
 }

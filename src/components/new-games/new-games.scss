@@ -1,34 +1,42 @@
 @use '../../styles/tokens';
 
 .new-games {
-  width: 100%;
-  max-width: 1920px;
-  margin-inline: auto;
-  padding: 40px clamp(16px, 6.25vw, 120px);
   overflow: hidden;
+
+  width: 100%;
+  max-width: tokens.$layout-max-width;
+  margin-inline: auto;
+  padding: tokens.$size-5 clamp(tokens.$size-2, 6.25vw, tokens.$size-15);
+
   background-color: tokens.$color-background;
 
   &__header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    min-height: 48px;
-    margin-bottom: 32px;
+
+    min-height: tokens.$size-6;
+    margin-bottom: tokens.$size-4;
   }
 
   &__title {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: tokens.$size-1;
+
     margin: 0;
+
     color: tokens.$color-on-primary;
-    font-size: 24px;
+
+    font-size: tokens.$font-size-headline-medium;
     line-height: 1.2;
 
     &::before {
-      width: 4px;
-      height: 24px;
-      border-radius: 9999px;
+      width: tokens.$size-05;
+      height: tokens.$size-3;
+
+      border-radius: tokens.$corner-full;
+
       background-color: tokens.$color-primary;
       content: '';
     }
@@ -36,29 +44,38 @@
 
   &__controls {
     display: flex;
-    gap: 16px;
+    gap: tokens.$size-2;
   }
 
   &__track {
-    display: flex;
-    gap: 8px;
+    position: relative;
+
     width: 100%;
-    height: clamp(168px, 35vw, 392px);
-    padding: 0 8px 8px 0;
+    height: clamp(
+      tokens.$carousel-height-mobile,
+      35vw,
+      tokens.$carousel-height-desktop
+    );
     overflow: hidden;
+
+    touch-action: pan-y;
+    user-select: none;
   }
 }
 
 .carousel-button {
   display: grid;
-  width: 48px;
-  height: 48px;
-  padding: 0;
   place-items: center;
-  border: 2px solid tokens.$color-on-primary;
-  border-radius: 50%;
-  color: tokens.$color-on-primary;
+
+  width: tokens.$size-6;
+  height: tokens.$size-6;
+  padding: 0;
+
+  border: tokens.$border-width-medium solid tokens.$color-on-primary;
+  border-radius: tokens.$corner-full;
+
   background-color: tokens.$color-white;
+  color: tokens.$color-on-primary;
   cursor: pointer;
 
   &--next {
@@ -70,44 +87,103 @@
   }
 
   &:focus-visible {
-    outline: 3px solid tokens.$color-tertiary;
-    outline-offset: 3px;
+    outline: tokens.$border-width-medium solid tokens.$color-tertiary;
+    outline-offset: tokens.$border-width-medium;
   }
 
   &__icon {
-    font-size: 24px;
-    font-weight: 700;
+    font-size: tokens.$font-size-headline-medium;
+    font-weight: tokens.$font-weight-bold;
     line-height: 1;
   }
 }
 
 .game-card {
-  position: relative;
-  flex: none;
-  height: calc(100% - 8px);
-  overflow: hidden;
-  border: 2px solid tokens.$color-on-primary;
-  border-radius: 16px;
-  background-color: tokens.$color-on-primary;
-  box-shadow: 8px 8px 0 tokens.$color-on-primary;
+  position: absolute;
+  top: 0;
+  bottom: tokens.$size-1;
 
-  &--peek {
-    flex-basis: calc((100% - 32px) * 0.073);
+  overflow: hidden;
+
+  height: calc(100% - tokens.$size-1);
+  padding: 0;
+
+  border: tokens.$border-width-medium solid tokens.$color-on-primary;
+  border-radius: tokens.$corner-large;
+
+  background-color: tokens.$color-on-primary;
+  box-shadow: tokens.$shadow-level-3;
+  color: tokens.$color-white;
+  cursor: pointer;
+  container-type: inline-size;
+
+  transition:
+    left tokens.$duration-carousel ease,
+    width tokens.$duration-carousel ease,
+    opacity tokens.$duration-carousel ease,
+    transform tokens.$duration-carousel ease;
+
+  &--hidden-left {
+    left: -20%;
+    z-index: 0;
+
+    width: 7%;
+    opacity: 0;
+    pointer-events: none;
   }
 
-  &--side {
-    flex-basis: calc((100% - 32px) * 0.1776);
+  &--peek-left {
+    left: 0;
+    z-index: 1;
+
+    width: calc(7.3% - 2px);
+  }
+
+  &--side-left {
+    left: calc(7.3% + 6px);
+    z-index: 2;
+
+    width: calc(17.76% - 6px);
   }
 
   &--featured {
-    flex-basis: calc((100% - 32px) * 0.4988);
+    left: calc(25.06% + 8px);
+    z-index: 3;
+
+    width: calc(49.88% - 16px);
+  }
+
+  &--side-right {
+    left: 74.94%;
+    z-index: 2;
+
+    width: calc(17.76% - 6px);
+  }
+
+  &--peek-right {
+    left: calc(92.7% + 2px);
+    z-index: 1;
+
+    width: calc(7.3% - 2px);
+  }
+
+  &--hidden-right {
+    left: 110%;
+    z-index: 0;
+
+    width: 7%;
+    opacity: 0;
+    pointer-events: none;
   }
 
   &__image {
     display: block;
+
     width: 100%;
     height: 100%;
+
     object-fit: cover;
+    pointer-events: none;
   }
 
   &::after {
@@ -115,7 +191,9 @@
     right: 0;
     bottom: 0;
     left: 0;
+
     height: 28%;
+
     background: linear-gradient(
       to bottom,
       rgb(0 0 0 / 0%) 0%,
@@ -123,43 +201,42 @@
       rgb(0 0 0 / 85%) 46%,
       rgb(0 0 0 / 85%) 100%
     );
-    pointer-events: none;
     content: '';
+    pointer-events: none;
   }
 
   &__content {
     position: absolute;
     z-index: 1;
-    right: 16px;
-    bottom: 16px;
-    left: 16px;
+    right: tokens.$size-2;
+    bottom: tokens.$size-2;
+    left: tokens.$size-2;
+
     color: tokens.$color-white;
+    pointer-events: none;
   }
 
   &__title {
-    margin: 0 0 8px;
+    display: block;
     overflow: hidden;
-    font-size: 16px;
+
+    margin-bottom: tokens.$size-1;
+
+    font-size: tokens.$font-size-headline-small;
+    font-weight: tokens.$font-weight-bold;
     line-height: 1.2;
     text-overflow: ellipsis;
     white-space: nowrap;
-  }
-
-  &--featured &__title {
-    font-size: 20px;
-  }
-
-  &--peek &__content {
-    display: none;
   }
 
   &__details {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 8px;
-    font-size: 12px;
-    font-weight: 700;
+    gap: tokens.$size-1;
+
+    font-size: tokens.$font-size-label-medium;
+    font-weight: tokens.$font-weight-bold;
   }
 
   &__rating span {
@@ -168,91 +245,121 @@
 
   &__likes span {
     color: tokens.$color-like;
-    font-size: 16px;
+  }
+
+  &:focus-visible {
+    outline: tokens.$border-width-medium solid tokens.$color-tertiary;
+    outline-offset: tokens.$border-width-medium;
   }
 }
 
-@media (max-width: 900px) {
+@container (max-width: #{tokens.$carousel-info-compact-max-width}) {
+  .game-card {
+    &::after,
+    &__content {
+      display: none;
+    }
+  }
+}
+
+@media (max-width: tokens.$breakpoint-carousel-compact) {
   .new-games {
-    padding-block: 32px;
+    padding-block: tokens.$size-4;
 
     &__header {
-      margin-bottom: 24px;
+      margin-bottom: tokens.$size-3;
     }
 
     &__track {
-      height: clamp(168px, 35vw, 270px);
+      height: clamp(
+        tokens.$carousel-height-mobile,
+        35vw,
+        tokens.$carousel-height-tablet
+      );
     }
   }
 
   .game-card {
-    &--peek {
-      display: none;
+    &--peek-left,
+    &--peek-right {
+      opacity: 0;
+      pointer-events: none;
     }
 
-    &--side {
-      flex-basis: 15%;
+    &--side-left {
+      left: 0;
+      width: 15%;
     }
 
     &--featured {
-      flex-basis: calc(70% - 16px);
+      left: 16%;
+      width: 68%;
     }
 
-    &--side &__content {
-      display: none;
+    &--side-right {
+      left: 85%;
+      width: 15%;
     }
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: tokens.$breakpoint-phone) {
   .new-games {
-    padding-block: 24px;
+    padding-block: tokens.$size-3;
 
     &__title {
-      font-size: 20px;
+      font-size: tokens.$font-size-headline-small;
 
       &::before {
-        height: 20px;
+        height: tokens.$font-size-headline-small;
       }
     }
 
     &__controls {
-      gap: 8px;
+      gap: tokens.$size-1;
     }
 
     &__track {
-      height: 168px;
+      height: tokens.$carousel-height-mobile;
     }
   }
 
   .carousel-button {
-    width: 40px;
-    height: 40px;
+    width: tokens.$size-5;
+    height: tokens.$size-5;
 
     &__icon {
-      font-size: 20px;
+      font-size: tokens.$font-size-headline-small;
     }
   }
 
   .game-card {
-    border-radius: 12px;
+    border-radius: tokens.$corner-medium;
 
-    &--side {
-      flex-basis: 14%;
+    &--side-left {
+      width: 14%;
     }
 
     &--featured {
-      flex-basis: calc(72% - 16px);
+      left: 15%;
+      width: 70%;
+    }
+
+    &--side-right {
+      left: 86%;
+      width: 14%;
     }
 
     &__content {
-      right: 12px;
-      bottom: 12px;
-      left: 12px;
+      right: tokens.$size-1;
+      bottom: tokens.$size-1;
+      left: tokens.$size-1;
     }
+  }
+}
 
-    &--featured &__title {
-      font-size: 14px;
-    }
+@media (prefers-reduced-motion: reduce) {
+  .game-card {
+    transition: none;
   }
 }
