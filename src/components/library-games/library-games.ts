@@ -1,4 +1,5 @@
 import './library-games.scss'
+import { openGameDetailsDialog } from '../game-details-dialog/game-details-dialog'
 
 import type { LibraryGame } from '../../types/library-game'
 import { libraryGames } from '../../data/library-games'
@@ -113,6 +114,7 @@ const createGameCard = (game: LibraryGame): HTMLElement => {
   detailsButton.type = 'button'
   detailsButton.textContent = 'Details'
   detailsButton.setAttribute('aria-label', `View details for ${game.name}`)
+  detailsButton.addEventListener('click', openGameDetailsDialog)
 
   identity.append(title, category)
   header.append(identity, desktopPrice)
