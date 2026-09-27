@@ -136,35 +136,35 @@
     left: 0;
     z-index: 1;
 
-    width: 7%;
+    width: calc(7.3% - 2px);
   }
 
   &--side-left {
-    left: 8%;
+    left: calc(7.3% + 6px);
     z-index: 2;
 
-    width: 17%;
+    width: calc(17.76% - 6px);
   }
 
   &--featured {
-    left: 26%;
+    left: calc(25.06% + 8px);
     z-index: 3;
 
-    width: 48%;
+    width: calc(49.88% - 16px);
   }
 
   &--side-right {
-    left: 75%;
+    left: 74.94%;
     z-index: 2;
 
-    width: 17%;
+    width: calc(17.76% - 6px);
   }
 
   &--peek-right {
-    left: 93%;
+    left: calc(92.7% + 2px);
     z-index: 1;
 
-    width: 7%;
+    width: calc(7.3% - 2px);
   }
 
   &--hidden-right {
