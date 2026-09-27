@@ -96,6 +96,10 @@ const createGameCard = (game: LibraryGame): HTMLElement => {
   detailsButton.textContent = 'Details'
   detailsButton.setAttribute('aria-label', `View details for ${game.name}`)
 
+  if (game.price === 'Free') {
+    price.classList.add('library-card__price--free')
+  }
+
   identity.append(title, category)
   header.append(identity, price)
 

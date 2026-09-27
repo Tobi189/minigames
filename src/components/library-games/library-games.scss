@@ -1,0 +1,180 @@
+@use '../../styles/tokens';
+
+.library-games {
+  width: 100%;
+  max-width: tokens.$layout-max-width;
+  margin-inline: auto;
+  padding-inline: tokens.$size-15;
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: tokens.$size-3;
+  }
+}
+
+.library-card {
+  display: flex;
+  overflow: hidden;
+
+  min-width: 0;
+  height: tokens.$library-card-height-desktop;
+
+  border: tokens.$border-width-medium solid tokens.$color-on-primary;
+  border-radius: tokens.$corner-large;
+
+  background-color: tokens.$color-surface-low;
+  box-shadow: tokens.$shadow-level-1;
+
+  &__image {
+    flex: 0 0 tokens.$library-card-image-width-desktop;
+
+    width: tokens.$library-card-image-width-desktop;
+    height: 100%;
+
+    object-fit: cover;
+  }
+
+  &__content {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: space-between;
+
+    min-width: 0;
+    padding: tokens.$size-2;
+  }
+
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    gap: tokens.$size-1;
+  }
+
+  &__identity {
+    display: flex;
+    align-items: center;
+    gap: tokens.$size-1;
+
+    min-width: 0;
+  }
+
+  &__title {
+    overflow: hidden;
+
+    margin: 0;
+
+    color: tokens.$color-on-primary;
+
+    font-size: tokens.$font-size-headline-medium;
+    font-weight: tokens.$font-weight-bold;
+    line-height: 1.2;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__category {
+    flex-shrink: 0;
+
+    padding: tokens.$size-05 tokens.$size-1;
+
+    border: tokens.$border-width-thin solid tokens.$color-on-primary;
+    border-radius: tokens.$corner-full;
+
+    color: tokens.$color-on-primary;
+
+    font-size: tokens.$font-size-label-medium;
+    font-weight: tokens.$font-weight-bold;
+    line-height: 1;
+    text-transform: capitalize;
+  }
+
+  &__price {
+    flex-shrink: 0;
+    margin-left: auto;
+
+    color: tokens.$color-on-primary;
+
+    font-size: tokens.$font-size-headline-medium;
+    font-weight: tokens.$font-weight-bold;
+    line-height: 1.2;
+
+    &--free {
+      color: tokens.$color-price-free;
+    }
+  }
+
+  &__description {
+    display: -webkit-box;
+    overflow: hidden;
+
+    margin: 0;
+
+    color: tokens.$color-on-background;
+
+    font-size: tokens.$font-size-body-medium;
+    font-weight: tokens.$font-weight-regular;
+    line-height: 1.4;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+
+  &__footer {
+    display: flex;
+    align-items: center;
+  }
+
+  &__stats {
+    display: flex;
+    align-items: center;
+    gap: tokens.$size-3;
+  }
+
+  &__rating,
+  &__likes {
+    display: inline-flex;
+    align-items: center;
+    gap: tokens.$size-05;
+
+    color: tokens.$color-on-primary;
+
+    font-size: tokens.$font-size-label-large;
+    font-weight: tokens.$font-weight-medium;
+    line-height: 1;
+  }
+
+  &__stat-icon {
+    width: tokens.$size-3;
+    height: tokens.$size-3;
+  }
+
+  &__details {
+    width: tokens.$library-details-button-width;
+    height: tokens.$library-details-button-height-desktop;
+    margin-left: auto;
+    padding: 0;
+
+    border: tokens.$border-width-thin solid tokens.$color-on-primary;
+    border-radius: tokens.$corner-small;
+
+    background-color: tokens.$color-primary;
+    color: tokens.$color-on-primary;
+    box-shadow: tokens.$shadow-level-1;
+
+    font-size: tokens.$font-size-label-large;
+    font-weight: tokens.$font-weight-bold;
+    line-height: 1;
+    cursor: pointer;
+
+    transition: background-color 150ms ease;
+
+    &:hover {
+      background-color: tokens.$color-primary-low;
+    }
+
+    &:focus-visible {
+      outline: tokens.$border-width-medium solid tokens.$color-tertiary;
+      outline-offset: tokens.$border-width-medium;
+    }
+  }
+}
