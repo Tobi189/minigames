@@ -28,6 +28,23 @@ const formatLikes = (likes: number): string => {
   return `${shortenedLikes}K`
 }
 
+const createPriceElement = (
+  game: LibraryGame,
+  modifier: 'desktop' | 'mobile',
+): HTMLElement => {
+  const price = createTextElement(
+    'span',
+    `library-card__price library-card__price--${modifier}`,
+    game.price,
+  )
+
+  if (game.price === 'Free') {
+    price.classList.add('library-card__price--free')
+  }
+
+  return price
+}
+
 const createGameCard = (game: LibraryGame): HTMLElement => {
   const card = document.createElement('article')
   card.className = 'library-card'
@@ -56,7 +73,8 @@ const createGameCard = (game: LibraryGame): HTMLElement => {
     game.category,
   )
 
-  const price = createTextElement('span', 'library-card__price', game.price)
+  const desktopPrice = createPriceElement(game, 'desktop')
+  const mobilePrice = createPriceElement(game, 'mobile')
 
   const description = createTextElement(
     'p',
@@ -96,17 +114,13 @@ const createGameCard = (game: LibraryGame): HTMLElement => {
   detailsButton.textContent = 'Details'
   detailsButton.setAttribute('aria-label', `View details for ${game.name}`)
 
-  if (game.price === 'Free') {
-    price.classList.add('library-card__price--free')
-  }
-
   identity.append(title, category)
-  header.append(identity, price)
+  header.append(identity, desktopPrice)
 
   rating.append(ratingIcon, game.rating.toString())
   likes.append(likesIcon, formatLikes(game.likesCount))
 
-  stats.append(rating, likes)
+  stats.append(rating, likes, mobilePrice)
   footer.append(stats, detailsButton)
 
   content.append(header, description, footer)

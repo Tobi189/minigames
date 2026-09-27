@@ -168,5 +168,15 @@ $library-sort-height-compact: 40px;
 // Library game cards
 $library-card-height-desktop: 200px;
 $library-card-image-width-desktop: 320px;
+
+$library-card-height-tablet: 152px;
+$library-card-image-width-tablet: 270px;
+
+$library-card-height-mobile: 392px;
+$library-card-image-height-mobile: 160px;
+
 $library-details-button-width: 88px;
 $library-details-button-height-desktop: 37px;
+$library-details-button-height-tablet: 33px;
+
+$breakpoint-library-single-column: 1280px;

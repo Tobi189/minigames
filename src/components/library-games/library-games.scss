@@ -1,4 +1,5 @@
 @use '../../styles/tokens';
+@use '../../styles/mixins';
 
 .library-games {
   width: 100%;
@@ -27,9 +28,10 @@
   box-shadow: tokens.$shadow-level-1;
 
   &__image {
-    flex: 0 0 tokens.$library-card-image-width-desktop;
+    flex: 0 0 38.65%;
 
-    width: tokens.$library-card-image-width-desktop;
+    width: 38.65%;
+    max-width: tokens.$library-card-image-width-desktop;
     height: 100%;
 
     object-fit: cover;
@@ -101,6 +103,10 @@
 
     &--free {
       color: tokens.$color-price-free;
+    }
+
+    &--mobile {
+      display: none;
     }
   }
 
@@ -175,6 +181,116 @@
     &:focus-visible {
       outline: tokens.$border-width-medium solid tokens.$color-tertiary;
       outline-offset: tokens.$border-width-medium;
+    }
+  }
+}
+
+@media (max-width: tokens.$breakpoint-library-single-column) {
+  .library-games__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@include mixins.tablet-and-down {
+  .library-games {
+    padding-inline: tokens.$size-5;
+
+    &__grid {
+      gap: tokens.$size-3;
+    }
+  }
+
+  .library-card {
+    height: tokens.$library-card-height-tablet;
+
+    &__image {
+      flex: 0 0 tokens.$library-card-image-width-tablet;
+
+      width: tokens.$library-card-image-width-tablet;
+      max-width: none;
+    }
+
+    &__description {
+      -webkit-line-clamp: 2;
+    }
+
+    &__details {
+      height: tokens.$library-details-button-height-tablet;
+    }
+  }
+}
+
+@media (max-width: tokens.$breakpoint-phone) {
+  .library-games {
+    padding-inline: tokens.$size-2;
+
+    &__grid {
+      gap: tokens.$size-2;
+    }
+  }
+
+  .library-card {
+    flex-direction: column;
+    height: tokens.$library-card-height-mobile;
+
+    &__image {
+      flex: 0 0 tokens.$library-card-image-height-mobile;
+
+      width: 100%;
+      max-width: none;
+      height: tokens.$library-card-image-height-mobile;
+    }
+
+    &__content {
+      padding: tokens.$size-2;
+    }
+
+    &__identity {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: tokens.$size-05;
+    }
+
+    &__title {
+      font-size: tokens.$font-size-headline-small;
+    }
+
+    &__description {
+      font-size: tokens.$font-size-body-small;
+      line-height: 1.4;
+      -webkit-line-clamp: 2;
+    }
+
+    &__footer {
+      flex-direction: column;
+      align-items: stretch;
+      gap: tokens.$size-2;
+    }
+
+    &__stats {
+      gap: tokens.$size-2;
+    }
+
+    &__rating,
+    &__likes {
+      font-size: tokens.$font-size-label-medium;
+    }
+
+    &__price {
+      font-size: tokens.$font-size-headline-small;
+
+      &--desktop {
+        display: none;
+      }
+
+      &--mobile {
+        display: inline;
+      }
+    }
+
+    &__details {
+      width: 100%;
+      height: tokens.$library-details-button-height-desktop;
     }
   }
 }
