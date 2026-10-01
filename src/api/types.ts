@@ -61,3 +61,23 @@ export type ApiCategoriesResponse = ApiCollectionResponse<
   ApiCategory,
   ApiCategoriesMeta
 >
+
+export interface ApiLeaderboardPlayer {
+  rank: number
+  playerName: string
+  gamesPlayed: number
+  totalScore: number
+  streakDays: number
+  favoriteGameSlug: string
+  favoriteGameName: string
+}
+
+export interface ApiLeaderboardPlayerMeta {
+  totalItems: number
+  description: string
+}
+
+export type ApiLeaderboardResponse = ApiCollectionResponse<
+  ApiLeaderboardPlayer,
+  ApiLeaderboardPlayerMeta
+>
