@@ -17,6 +17,7 @@ export type ApiGameCategory =
 export type ApiGameSort =
   'rating-desc' | 'rating-asc' | 'name-asc' | 'name-desc'
 
+export type ApiCommentSort = 'newest' | 'oldest'
 export type ApiGameCategoryFilter = ApiGameCategory | 'all'
 
 export interface ApiGame {
@@ -72,14 +73,14 @@ export interface ApiLeaderboardPlayer {
   favoriteGameName: string
 }
 
-export interface ApiLeaderboardPlayerMeta {
+export interface ApiLeaderboardMeta {
   totalItems: number
   description: string
 }
 
 export type ApiLeaderboardResponse = ApiCollectionResponse<
   ApiLeaderboardPlayer,
-  ApiLeaderboardPlayerMeta
+  ApiLeaderboardMeta
 >
 
 export interface ApiGameSpecs {
@@ -122,7 +123,7 @@ export interface ApiComment {
 export interface ApiCommentsMeta {
   totalComments: number
   returnedCount: number
-  sort: string
+  sort: ApiCommentSort
 }
 
 export type ApiCommentsResponse = ApiCollectionResponse<
