@@ -109,3 +109,23 @@ export interface ApiGameDetails {
 }
 
 export type ApiGameDetailsResponse = ApiResponse<ApiGameDetails>
+
+export interface ApiComment {
+  commentId: string
+  authorName: string
+  text: string
+  likesCount: number
+  isLikedByCurrentUser: boolean
+  createdAt: string
+}
+
+export interface ApiCommentsMeta {
+  totalComments: number
+  returnedCount: number
+  sort: string
+}
+
+export type ApiCommentsResponse = ApiCollectionResponse<
+  ApiComment,
+  ApiCommentsMeta
+>
