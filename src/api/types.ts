@@ -81,3 +81,31 @@ export type ApiLeaderboardResponse = ApiCollectionResponse<
   ApiLeaderboardPlayer,
   ApiLeaderboardPlayerMeta
 >
+
+export interface ApiGameSpecs {
+  genre: string
+  players: string
+  duration: string
+  price: string
+}
+
+export interface ApiGameRecord {
+  position: number
+  playerName: string
+  score: number
+  achievedAt: string
+}
+
+export interface ApiGameDetails {
+  slug: string
+  name: string
+  heroImage: string
+  rating: number
+  likesCount: number
+  isLikedByCurrentUser: boolean
+  fullDescription: string
+  specs: ApiGameSpecs
+  topRecords: ApiGameRecord[]
+}
+
+export type ApiGameDetailsResponse = ApiResponse<ApiGameDetails>
