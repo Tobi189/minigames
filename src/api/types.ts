@@ -28,18 +28,18 @@ export interface ApiGame {
   cardImage: string
 }
 
-export interface GamesAppliedFilter {
+export interface ApiGamesAppliedFilter {
   category?: ApiGameCategory | 'all'
   sort?: ApiGameSort
   featured?: boolean
 }
 
-export interface GamesMeta {
+export interface ApiGamesMeta {
   page: number
   limit: number
   totalItems: number
   totalPages: number
-  appliedFilter: GamesAppliedFilter
+  appliedFilter: ApiGamesAppliedFilter
 }
 
-export type GamesResponse = ApiCollectionResponse<ApiGame, GamesMeta>
+export type ApiGamesResponse = ApiCollectionResponse<ApiGame, ApiGamesMeta>
