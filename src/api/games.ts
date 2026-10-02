@@ -2,6 +2,7 @@ import type {
   ApiGamesResponse,
   ApiGameCategoryFilter,
   ApiGameSort,
+  ApiGameDetailsResponse,
 } from './types'
 import { apiRequest } from './client'
 
@@ -35,4 +36,15 @@ export const getGames = (
   const request = apiRequest<ApiGamesResponse>(endpoint, signal)
 
   return request
+}
+
+export const getGameDetails = (
+  gameSlug: string,
+  signal?: AbortSignal,
+): Promise<ApiGameDetailsResponse> => {
+  const endpoint = `/games/${encodeURIComponent(gameSlug)}3`
+
+  const response = apiRequest<ApiGameDetailsResponse>(endpoint, signal)
+
+  return response
 }
