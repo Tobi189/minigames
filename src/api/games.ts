@@ -42,7 +42,7 @@ export const getGameDetails = (
   gameSlug: string,
   signal?: AbortSignal,
 ): Promise<ApiGameDetailsResponse> => {
-  const endpoint = `/games/${encodeURIComponent(gameSlug)}3`
+  const endpoint = `/games/${encodeURIComponent(gameSlug)}`
 
   const response = apiRequest<ApiGameDetailsResponse>(endpoint, signal)
 
