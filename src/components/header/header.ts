@@ -2,13 +2,25 @@ import logoUrl from '../../assets/logo.svg'
 import './header.scss'
 import { createAuthModal } from '../auth-modal/auth-modal'
 
+import {
+  createAppUrl,
+  getCurrentRoute,
+  navigate,
+  type AppRoute,
+} from '../../app/router'
+
 export const createHeader = (): HTMLElement => {
   const header = document.createElement('header')
   header.className = 'header'
 
   const brand = document.createElement('a')
   brand.className = 'header__brand'
-  brand.href = '#'
+  brand.href = createAppUrl('/')
+
+  brand.addEventListener('click', (event) => {
+    event.preventDefault()
+    navigate('/')
+  })
 
   const logo = document.createElement('img')
   logo.src = logoUrl
@@ -26,29 +38,38 @@ export const createHeader = (): HTMLElement => {
   const list = document.createElement('ul')
   list.className = 'header__links'
 
-  const navItems = [
-    { label: 'Home', href: '#' },
-    { label: 'Library', href: '#/library' },
-    { label: 'Tournaments', href: '#' },
-    { label: 'Community', href: '#' },
+  const navItems: Array<{
+    label: string
+    path: string
+    route: AppRoute | null
+  }> = [
+    { label: 'Home', path: '/', route: 'home' },
+    { label: 'Library', path: '/library', route: 'library' },
+    { label: 'Tournaments', path: '/', route: null },
+    { label: 'Community', path: '/', route: null },
   ]
 
-  const currentHash = window.location.hash || '#'
+  const currentRoute = getCurrentRoute()
 
-  navItems.forEach(({ label, href }) => {
+  navItems.forEach(({ label, path, route }) => {
     const item = document.createElement('li')
     const link = document.createElement('a')
 
     link.textContent = label
-    link.href = href
+    link.href = createAppUrl(path)
 
-    const isCurrent =
-      (href === '#' && (currentHash === '' || currentHash === '#')) ||
-      (href !== '#' && currentHash.startsWith(href))
+    if (route !== null) {
+      link.dataset.route = route
+    }
 
-    if (isCurrent) {
+    if (route === currentRoute) {
       link.setAttribute('aria-current', 'page')
     }
+
+    link.addEventListener('click', (event) => {
+      event.preventDefault()
+      navigate(path)
+    })
 
     item.append(link)
     list.append(item)
