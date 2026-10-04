@@ -1,7 +1,12 @@
 import './library-pagination.scss'
 
-const TOTAL_PAGES = 4
 const MOBILE_QUERY = '(max-width: 480px)'
+
+interface LibraryPaginationOptions {
+  currentPage: number
+  totalPages: number
+  onPageChange: (page: number) => void
+}
 
 const createControlButton = (
   className: string,
@@ -17,7 +22,11 @@ const createControlButton = (
   return button
 }
 
-export const createLibraryPagination = (): HTMLElement => {
+export const createLibraryPagination = ({
+  currentPage,
+  totalPages,
+  onPageChange,
+}: LibraryPaginationOptions): HTMLElement => {
   const pagination = document.createElement('nav')
   pagination.className = 'library-pagination'
   pagination.setAttribute('aria-label', 'Library pages')
@@ -37,10 +46,10 @@ export const createLibraryPagination = (): HTMLElement => {
     '→',
   )
 
-  let activePage = 1
+  const pageCount = Math.max(totalPages, 1)
 
   const pageButtons = Array.from(
-    { length: TOTAL_PAGES },
+    { length: pageCount },
     (_, index): HTMLButtonElement => {
       const page = index + 1
       const button = createControlButton(
@@ -50,8 +59,9 @@ export const createLibraryPagination = (): HTMLElement => {
       )
 
       button.addEventListener('click', () => {
-        activePage = page
-        updatePagination()
+        if (page !== currentPage) {
+          onPageChange(page)
+        }
       })
 
       return button
@@ -60,17 +70,18 @@ export const createLibraryPagination = (): HTMLElement => {
 
   const updatePagination = (): void => {
     const maximumVisiblePages = window.matchMedia(MOBILE_QUERY).matches ? 3 : 4
+    const visiblePageCount = Math.min(pageCount, maximumVisiblePages)
 
-    const maximumStartPage = TOTAL_PAGES - maximumVisiblePages + 1
-    const startPage = Math.min(Math.max(activePage - 1, 1), maximumStartPage)
-    const endPage = startPage + maximumVisiblePages - 1
+    const maximumStartPage = pageCount - visiblePageCount + 1
+    const startPage = Math.min(Math.max(currentPage - 1, 1), maximumStartPage)
+    const endPage = startPage + visiblePageCount - 1
 
-    previousButton.disabled = activePage === 1
-    nextButton.disabled = activePage === TOTAL_PAGES
+    previousButton.disabled = currentPage <= 1
+    nextButton.disabled = currentPage >= pageCount
 
     pageButtons.forEach((button, index) => {
       const page = index + 1
-      const isActive = page === activePage
+      const isActive = page === currentPage
 
       button.hidden = page < startPage || page > endPage
       button.classList.toggle('library-pagination__page--active', isActive)
@@ -84,16 +95,14 @@ export const createLibraryPagination = (): HTMLElement => {
   }
 
   previousButton.addEventListener('click', () => {
-    if (activePage > 1) {
-      activePage -= 1
-      updatePagination()
+    if (currentPage > 1) {
+      onPageChange(currentPage - 1)
     }
   })
 
   nextButton.addEventListener('click', () => {
-    if (activePage < TOTAL_PAGES) {
-      activePage += 1
-      updatePagination()
+    if (currentPage < pageCount) {
+      onPageChange(currentPage + 1)
     }
   })
 
