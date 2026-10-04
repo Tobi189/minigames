@@ -135,6 +135,29 @@ export const createLibraryGames = (games: ApiGame[]): HTMLElement => {
   section.className = 'library-games'
   section.setAttribute('aria-label', 'Available games')
 
+  if (games.length === 0) {
+    const emptyState = document.createElement('div')
+    emptyState.className = 'library-games__empty'
+    emptyState.setAttribute('role', 'status')
+
+    const title = createTextElement(
+      'h2',
+      'library-games__empty-title',
+      'Data Not Found',
+    )
+
+    const message = createTextElement(
+      'p',
+      'library-games__empty-message',
+      'No games were found for the selected options.',
+    )
+
+    emptyState.append(title, message)
+    section.append(emptyState)
+
+    return section
+  }
+
   const grid = document.createElement('div')
   grid.className = 'library-games__grid'
 

@@ -12,6 +12,40 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: tokens.$size-3;
   }
+
+  &__empty {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+    gap: tokens.$size-1;
+
+    min-height: 280px;
+    padding: tokens.$size-5;
+
+    border: tokens.$border-width-thin solid tokens.$color-on-primary;
+    border-radius: tokens.$corner-large;
+
+    background-color: tokens.$color-surface-low;
+    text-align: center;
+  }
+
+  &__empty-title {
+    margin: 0;
+
+    color: tokens.$color-on-primary;
+
+    font-size: tokens.$font-size-headline-medium;
+    font-weight: tokens.$font-weight-bold;
+  }
+
+  &__empty-message {
+    margin: 0;
+
+    color: tokens.$color-on-background;
+
+    font-size: tokens.$font-size-body-medium;
+  }
 }
 
 .library-card {
