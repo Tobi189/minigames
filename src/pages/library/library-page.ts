@@ -1,8 +1,10 @@
 import { getCategories } from '../../api/categories'
+import { getGames } from '../../api/games'
 import { createLibraryFilters } from '../../components/library-filters/library-filters'
 import { createLibraryGames } from '../../components/library-games/library-games'
 import { createLibraryIntro } from '../../components/library-intro/library-intro'
 import { createLibraryPagination } from '../../components/library-pagination/library-pagination'
+import type { LibraryState } from './library-state'
 import { getLibraryState, navigateToLibraryState } from './library-state'
 
 export const createLibraryPage = (): HTMLElement => {
@@ -12,6 +14,10 @@ export const createLibraryPage = (): HTMLElement => {
   const filtersStatus = document.createElement('section')
   filtersStatus.className = 'library-filters-status'
   filtersStatus.textContent = 'Loading filters…'
+
+  const gamesStatus = document.createElement('section')
+  gamesStatus.className = 'library-games-status'
+  gamesStatus.textContent = 'Waiting for filters…'
 
   const renderFiltersError = (): void => {
     const message = document.createElement('p')
@@ -26,6 +32,40 @@ export const createLibraryPage = (): HTMLElement => {
     })
 
     filtersStatus.replaceChildren(message, retryButton)
+  }
+
+  const renderGamesError = (state: LibraryState): void => {
+    const message = document.createElement('p')
+    message.textContent = 'Unable to load games.'
+
+    const retryButton = document.createElement('button')
+    retryButton.type = 'button'
+    retryButton.textContent = 'Retry'
+
+    retryButton.addEventListener('click', () => {
+      void loadGames(state)
+    })
+
+    gamesStatus.replaceChildren(message, retryButton)
+  }
+
+  const loadGames = async (state: LibraryState): Promise<void> => {
+    gamesStatus.textContent = 'Loading games…'
+
+    try {
+      const response = await getGames({
+        page: state.page,
+        limit: 6,
+        category: state.category,
+        sort: state.sort,
+      })
+
+      const games = createLibraryGames(response.data)
+
+      gamesStatus.replaceWith(games)
+    } catch {
+      renderGamesError(state)
+    }
   }
 
   const loadFilters = async (): Promise<void> => {
@@ -61,6 +101,7 @@ export const createLibraryPage = (): HTMLElement => {
       })
 
       filtersStatus.replaceWith(filters)
+      void loadGames(state)
     } catch {
       renderFiltersError()
     }
@@ -69,7 +110,7 @@ export const createLibraryPage = (): HTMLElement => {
   page.append(
     createLibraryIntro(),
     filtersStatus,
-    createLibraryGames(),
+    gamesStatus,
     createLibraryPagination(),
   )
 

@@ -1,8 +1,7 @@
 import './library-games.scss'
 import { openGameDetailsDialog } from '../game-details-dialog/game-details-dialog'
-
-import type { LibraryGame } from '../../types/library-game'
-import { libraryGames } from '../../data/library-games'
+import type { ApiGame } from '../../api/types'
+import { createAppUrl } from '../../app/router'
 
 import favoriteHeartIcon from '../../assets/icons/favorite-heart.svg'
 import ratingStarIcon from '../../assets/icons/rating-star.svg'
@@ -30,7 +29,7 @@ const formatLikes = (likes: number): string => {
 }
 
 const createPriceElement = (
-  game: LibraryGame,
+  game: ApiGame,
   modifier: 'desktop' | 'mobile',
 ): HTMLElement => {
   const price = createTextElement(
@@ -46,14 +45,14 @@ const createPriceElement = (
   return price
 }
 
-const createGameCard = (game: LibraryGame): HTMLElement => {
+const createGameCard = (game: ApiGame): HTMLElement => {
   const card = document.createElement('article')
   card.className = 'library-card'
   card.dataset.gameSlug = game.slug
 
   const image = document.createElement('img')
   image.className = 'library-card__image'
-  image.src = game.cardImage
+  image.src = createAppUrl(game.cardImage)
   image.alt = game.name
   image.loading = 'lazy'
 
@@ -131,7 +130,7 @@ const createGameCard = (game: LibraryGame): HTMLElement => {
   return card
 }
 
-export const createLibraryGames = (): HTMLElement => {
+export const createLibraryGames = (games: ApiGame[]): HTMLElement => {
   const section = document.createElement('section')
   section.className = 'library-games'
   section.setAttribute('aria-label', 'Available games')
@@ -139,7 +138,7 @@ export const createLibraryGames = (): HTMLElement => {
   const grid = document.createElement('div')
   grid.className = 'library-games__grid'
 
-  const cards = libraryGames.map((game) => createGameCard(game))
+  const cards = games.map((game) => createGameCard(game))
 
   grid.append(...cards)
   section.append(grid)
