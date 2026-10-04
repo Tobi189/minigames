@@ -1,8 +1,7 @@
 import './library-games.scss'
 import { openGameDetailsDialog } from '../game-details-dialog/game-details-dialog'
-
-import type { LibraryGame } from '../../types/library-game'
-import { libraryGames } from '../../data/library-games'
+import type { ApiGame } from '../../api/types'
+import { createAppUrl } from '../../app/router'
 
 import favoriteHeartIcon from '../../assets/icons/favorite-heart.svg'
 import ratingStarIcon from '../../assets/icons/rating-star.svg'
@@ -30,7 +29,7 @@ const formatLikes = (likes: number): string => {
 }
 
 const createPriceElement = (
-  game: LibraryGame,
+  game: ApiGame,
   modifier: 'desktop' | 'mobile',
 ): HTMLElement => {
   const price = createTextElement(
@@ -46,14 +45,14 @@ const createPriceElement = (
   return price
 }
 
-const createGameCard = (game: LibraryGame): HTMLElement => {
+const createGameCard = (game: ApiGame): HTMLElement => {
   const card = document.createElement('article')
   card.className = 'library-card'
   card.dataset.gameSlug = game.slug
 
   const image = document.createElement('img')
   image.className = 'library-card__image'
-  image.src = game.cardImage
+  image.src = createAppUrl(game.cardImage)
   image.alt = game.name
   image.loading = 'lazy'
 
@@ -131,15 +130,57 @@ const createGameCard = (game: LibraryGame): HTMLElement => {
   return card
 }
 
-export const createLibraryGames = (): HTMLElement => {
+const SKELETON_CARD_COUNT = 6
+
+export const createLibraryGamesSkeleton = (): HTMLElement => {
+  const grid = document.createElement('div')
+  grid.className = 'library-games__grid'
+  grid.setAttribute('aria-hidden', 'true')
+
+  const cards = Array.from({ length: SKELETON_CARD_COUNT }, (): HTMLElement => {
+    const card = document.createElement('article')
+    card.className = 'library-card library-card--skeleton'
+
+    return card
+  })
+
+  grid.append(...cards)
+
+  return grid
+}
+
+export const createLibraryGames = (games: ApiGame[]): HTMLElement => {
   const section = document.createElement('section')
   section.className = 'library-games'
   section.setAttribute('aria-label', 'Available games')
 
+  if (games.length === 0) {
+    const emptyState = document.createElement('div')
+    emptyState.className = 'library-games__empty'
+    emptyState.setAttribute('role', 'status')
+
+    const title = createTextElement(
+      'h2',
+      'library-games__empty-title',
+      'Data Not Found',
+    )
+
+    const message = createTextElement(
+      'p',
+      'library-games__empty-message',
+      'No games were found for the selected options.',
+    )
+
+    emptyState.append(title, message)
+    section.append(emptyState)
+
+    return section
+  }
+
   const grid = document.createElement('div')
   grid.className = 'library-games__grid'
 
-  const cards = libraryGames.map((game) => createGameCard(game))
+  const cards = games.map((game) => createGameCard(game))
 
   grid.append(...cards)
   section.append(grid)
