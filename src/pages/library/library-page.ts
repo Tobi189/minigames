@@ -19,6 +19,9 @@ export const createLibraryPage = (): HTMLElement => {
   gamesStatus.className = 'library-games-status'
   gamesStatus.textContent = 'Waiting for filters…'
 
+  const paginationStatus = document.createElement('div')
+  paginationStatus.className = 'library-pagination-status'
+
   const renderFiltersError = (): void => {
     const message = document.createElement('p')
     message.textContent = 'Unable to load game categories.'
@@ -62,7 +65,20 @@ export const createLibraryPage = (): HTMLElement => {
 
       const games = createLibraryGames(response.data)
 
+      const pagination = createLibraryPagination({
+        currentPage: response.meta.page,
+        totalPages: response.meta.totalPages,
+
+        onPageChange: (pageNumber) => {
+          navigateToLibraryState({
+            ...state,
+            page: pageNumber,
+          })
+        },
+      })
+
       gamesStatus.replaceWith(games)
+      paginationStatus.replaceWith(pagination)
     } catch {
       renderGamesError(state)
     }
@@ -111,7 +127,7 @@ export const createLibraryPage = (): HTMLElement => {
     createLibraryIntro(),
     filtersStatus,
     gamesStatus,
-    createLibraryPagination(),
+    paginationStatus,
   )
 
   void loadFilters()
