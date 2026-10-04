@@ -46,6 +46,21 @@
 
     font-size: tokens.$font-size-body-medium;
   }
+
+  &--skeleton {
+    border-color: transparent;
+
+    background: linear-gradient(
+      90deg,
+      tokens.$color-surface-low 25%,
+      tokens.$color-surface 50%,
+      tokens.$color-surface-low 75%
+    );
+    background-size: 200% 100%;
+    box-shadow: none;
+
+    animation: library-card-loading 1.4s ease-in-out infinite;
+  }
 }
 
 .library-card {
@@ -326,5 +341,21 @@
       width: 100%;
       height: tokens.$library-details-button-height-desktop;
     }
+  }
+}
+
+@keyframes library-card-loading {
+  from {
+    background-position: 200% 0;
+  }
+
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .library-card--skeleton {
+    animation: none;
   }
 }

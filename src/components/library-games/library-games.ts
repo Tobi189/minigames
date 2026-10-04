@@ -130,6 +130,25 @@ const createGameCard = (game: ApiGame): HTMLElement => {
   return card
 }
 
+const SKELETON_CARD_COUNT = 6
+
+export const createLibraryGamesSkeleton = (): HTMLElement => {
+  const grid = document.createElement('div')
+  grid.className = 'library-games__grid'
+  grid.setAttribute('aria-hidden', 'true')
+
+  const cards = Array.from({ length: SKELETON_CARD_COUNT }, (): HTMLElement => {
+    const card = document.createElement('article')
+    card.className = 'library-card library-card--skeleton'
+
+    return card
+  })
+
+  grid.append(...cards)
+
+  return grid
+}
+
 export const createLibraryGames = (games: ApiGame[]): HTMLElement => {
   const section = document.createElement('section')
   section.className = 'library-games'

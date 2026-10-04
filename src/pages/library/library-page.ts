@@ -1,7 +1,10 @@
 import { getCategories } from '../../api/categories'
 import { getGames } from '../../api/games'
 import { createLibraryFilters } from '../../components/library-filters/library-filters'
-import { createLibraryGames } from '../../components/library-games/library-games'
+import {
+  createLibraryGames,
+  createLibraryGamesSkeleton,
+} from '../../components/library-games/library-games'
 import { createLibraryIntro } from '../../components/library-intro/library-intro'
 import { createLibraryPagination } from '../../components/library-pagination/library-pagination'
 import type { LibraryState } from './library-state'
@@ -16,7 +19,8 @@ export const createLibraryPage = (): HTMLElement => {
   filtersStatus.textContent = 'Loading filters…'
 
   const gamesStatus = document.createElement('section')
-  gamesStatus.className = 'library-games-status'
+  gamesStatus.className = 'library-games library-games-status'
+  gamesStatus.setAttribute('aria-live', 'polite')
   gamesStatus.textContent = 'Waiting for filters…'
 
   const paginationStatus = document.createElement('div')
@@ -38,6 +42,9 @@ export const createLibraryPage = (): HTMLElement => {
   }
 
   const renderGamesError = (state: LibraryState): void => {
+    gamesStatus.setAttribute('aria-busy', 'false')
+    gamesStatus.removeAttribute('aria-label')
+
     const message = document.createElement('p')
     message.textContent = 'Unable to load games.'
 
@@ -53,7 +60,9 @@ export const createLibraryPage = (): HTMLElement => {
   }
 
   const loadGames = async (state: LibraryState): Promise<void> => {
-    gamesStatus.textContent = 'Loading games…'
+    gamesStatus.setAttribute('aria-busy', 'true')
+    gamesStatus.setAttribute('aria-label', 'Loading games')
+    gamesStatus.replaceChildren(createLibraryGamesSkeleton())
 
     try {
       const response = await getGames({
