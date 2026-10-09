@@ -1,80 +1,41 @@
 import './top-players.scss'
 
-type Player = {
-  rank: number
-  initials: string
-  avatarColor: string
-  name: string
-  gamesPlayed: number
-  score: string
-  shortScore: string
-  streak: string
-  shortStreak: string
-  favoriteGame: string
+import { getLeaderboard } from '../../api/leaderboard'
+import type { ApiLeaderboardPlayer } from '../../api/types'
+import {
+  createApiEmptyState,
+  createApiErrorBanner,
+  createApiSkeleton,
+  showSnackbar,
+} from '../api-feedback/api-feedback'
+
+const AVATAR_COLORS = ['yellow', 'green', 'blue', 'pink', 'purple']
+
+const getInitials = (name: string): string => {
+  const words = name.split(/[_\s-]+/).filter(Boolean)
+
+  if (words.length > 1) {
+    return words
+      .slice(0, 2)
+      .map((word) => word.charAt(0))
+      .join('')
+      .toUpperCase()
+  }
+
+  const capitalLetters = name.match(/[A-Z]/g)
+
+  if (capitalLetters && capitalLetters.length > 1) {
+    return capitalLetters.slice(0, 2).join('')
+  }
+
+  return name.slice(0, 2).toUpperCase()
 }
 
-const players: Player[] = [
-  {
-    rank: 1,
-    initials: 'AP',
-    avatarColor: 'yellow',
-    name: 'Alex_Pro99',
-    gamesPlayed: 142,
-    score: '94,250',
-    shortScore: '94.2K',
-    streak: '12 days',
-    shortStreak: '12d',
-    favoriteGame: 'Herotopia',
-  },
-  {
-    rank: 2,
-    initials: 'CG',
-    avatarColor: 'green',
-    name: 'CozyGamer_x',
-    gamesPlayed: 118,
-    score: '81,400',
-    shortScore: '81.4K',
-    streak: '8 days',
-    shortStreak: '8d',
-    favoriteGame: 'Cat Mail Co.',
-  },
-  {
-    rank: 3,
-    initials: 'MM',
-    avatarColor: 'blue',
-    name: 'MatchMaster',
-    gamesPlayed: 98,
-    score: '72,110',
-    shortScore: '72.1K',
-    streak: '5 days',
-    shortStreak: '5d',
-    favoriteGame: 'Tiny Glade',
-  },
-  {
-    rank: 4,
-    initials: 'BP',
-    avatarColor: 'pink',
-    name: 'BubblePop',
-    gamesPlayed: 87,
-    score: '65,900',
-    shortScore: '65.9K',
-    streak: '3 days',
-    shortStreak: '3d',
-    favoriteGame: 'Whisper of the House',
-  },
-  {
-    rank: 5,
-    initials: 'SG',
-    avatarColor: 'purple',
-    name: 'SudokuGod',
-    gamesPlayed: 74,
-    score: '59,320',
-    shortScore: '59.3K',
-    streak: '2 days',
-    shortStreak: '2d',
-    favoriteGame: 'Cat Chess',
-  },
-]
+const formatCompactNumber = (value: number): string =>
+  new Intl.NumberFormat('en-US', {
+    notation: 'compact',
+    maximumFractionDigits: 1,
+  }).format(value)
 
 const createTextElement = (
   tag: 'span' | 'td',
@@ -88,7 +49,10 @@ const createTextElement = (
   return element
 }
 
-const createPlayerRow = (player: Player): HTMLTableRowElement => {
+const createPlayerRow = (
+  player: ApiLeaderboardPlayer,
+  index: number,
+): HTMLTableRowElement => {
   const row = document.createElement('tr')
   row.className = 'leaderboard__row'
 
@@ -99,29 +63,46 @@ const createPlayerRow = (player: Player): HTMLTableRowElement => {
   const playerCell = document.createElement('td')
   playerCell.className = 'leaderboard__player'
 
+  const playerContent = document.createElement('div')
+  playerContent.className = 'leaderboard__player-content'
+
+  const avatarColor =
+    AVATAR_COLORS[index % AVATAR_COLORS.length] ?? AVATAR_COLORS[0]
+
   const avatar = createTextElement(
     'span',
-    `leaderboard__avatar leaderboard__avatar--${player.avatarColor}`,
-    player.initials,
+    `leaderboard__avatar leaderboard__avatar--${avatarColor}`,
+    getInitials(player.playerName),
   )
 
   const name = createTextElement(
     'span',
     'leaderboard__player-name',
-    player.name,
+    player.playerName,
   )
 
-  playerCell.append(avatar, name)
+  playerContent.append(avatar, name)
+  playerCell.append(playerContent)
 
-  const gamesPlayed = document.createElement('td')
-  gamesPlayed.className = 'leaderboard__games'
-  gamesPlayed.textContent = player.gamesPlayed.toString()
+  const gamesPlayed = createTextElement(
+    'td',
+    'leaderboard__games',
+    player.gamesPlayed.toString(),
+  )
 
   const score = document.createElement('td')
   score.className = 'leaderboard__score'
   score.append(
-    createTextElement('span', 'leaderboard__desktop-value', player.score),
-    createTextElement('span', 'leaderboard__mobile-value', player.shortScore),
+    createTextElement(
+      'span',
+      'leaderboard__desktop-value',
+      player.totalScore.toLocaleString('en-US'),
+    ),
+    createTextElement(
+      'span',
+      'leaderboard__mobile-value',
+      formatCompactNumber(player.totalScore),
+    ),
   )
 
   const streak = document.createElement('td')
@@ -132,8 +113,16 @@ const createPlayerRow = (player: Player): HTMLTableRowElement => {
 
   streak.append(
     flame,
-    createTextElement('span', 'leaderboard__desktop-value', player.streak),
-    createTextElement('span', 'leaderboard__mobile-value', player.shortStreak),
+    createTextElement(
+      'span',
+      'leaderboard__desktop-value',
+      `${player.streakDays} ${player.streakDays === 1 ? 'day' : 'days'}`,
+    ),
+    createTextElement(
+      'span',
+      'leaderboard__mobile-value',
+      `${player.streakDays}d`,
+    ),
   )
 
   const favorite = document.createElement('td')
@@ -142,7 +131,7 @@ const createPlayerRow = (player: Player): HTMLTableRowElement => {
   const gameBadge = createTextElement(
     'span',
     'leaderboard__game-badge',
-    player.favoriteGame,
+    player.favoriteGameName,
   )
   favorite.append(gameBadge)
 
@@ -151,19 +140,9 @@ const createPlayerRow = (player: Player): HTMLTableRowElement => {
   return row
 }
 
-export const createTopPlayers = (): HTMLElement => {
-  const section = document.createElement('section')
-  section.className = 'top-players'
-  section.setAttribute('aria-labelledby', 'top-players-title')
-
-  const title = document.createElement('h2')
-  title.id = 'top-players-title'
-  title.className = 'top-players__title'
-  title.append(
-    document.createTextNode('Top Players'),
-    createTextElement('span', 'top-players__title-suffix', ' This Week'),
-  )
-
+const createLeaderboardTable = (
+  players: ApiLeaderboardPlayer[],
+): HTMLElement => {
   const tableContainer = document.createElement('div')
   tableContainer.className = 'leaderboard'
 
@@ -193,14 +172,69 @@ export const createTopPlayers = (): HTMLElement => {
   tableHead.append(headerRow)
 
   const tableBody = document.createElement('tbody')
-
-  players.forEach((player) => {
-    tableBody.append(createPlayerRow(player))
-  })
+  tableBody.append(...players.map(createPlayerRow))
 
   table.append(tableHead, tableBody)
   tableContainer.append(table)
-  section.append(title, tableContainer)
+
+  return tableContainer
+}
+
+export const createTopPlayers = (): HTMLElement => {
+  const section = document.createElement('section')
+  section.className = 'top-players'
+  section.setAttribute('aria-labelledby', 'top-players-title')
+
+  const title = document.createElement('h2')
+  title.id = 'top-players-title'
+  title.className = 'top-players__title'
+  title.append(
+    document.createTextNode('Top Players'),
+    createTextElement('span', 'top-players__title-suffix', ' This Week'),
+  )
+
+  const content = document.createElement('div')
+  content.className = 'top-players__content'
+
+  section.append(title, content)
+
+  const loadLeaderboard = async (isRetry = false): Promise<void> => {
+    content.replaceChildren(
+      createApiSkeleton('top-players__skeleton', 'Loading leaderboard'),
+    )
+
+    try {
+      const response = await getLeaderboard()
+
+      if (!section.isConnected) return
+
+      if (response.data.length === 0) {
+        content.replaceChildren(
+          createApiEmptyState(
+            'No leaderboard entries',
+            'Scores will appear here when players join.',
+          ),
+        )
+      } else {
+        content.replaceChildren(createLeaderboardTable(response.data))
+      }
+
+      if (isRetry) {
+        showSnackbar('Leaderboard loaded successfully.', 'success')
+      }
+    } catch {
+      if (!section.isConnected) return
+
+      showSnackbar('Unable to load the leaderboard.', 'error')
+      content.replaceChildren(
+        createApiErrorBanner('Unable to load the leaderboard.', () => {
+          void loadLeaderboard(true)
+        }),
+      )
+    }
+  }
+
+  void loadLeaderboard()
 
   return section
 }
