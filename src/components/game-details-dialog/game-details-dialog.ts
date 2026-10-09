@@ -20,6 +20,52 @@ import {
 
 const DIALOG_ANIMATION_DURATION = 200
 const TEXTAREA_MAX_HEIGHT = 88
+const GAME_QUERY_PARAMETER = 'game'
+const DIALOG_HISTORY_STATE = 'gameDialog'
+
+interface ActiveGameDialog {
+  gameSlug: string
+  close: (updateUrl: boolean) => void
+  destroy: () => void
+}
+
+let activeGameDialog: ActiveGameDialog | null = null
+
+const getHistoryState = (): Record<string, unknown> => {
+  const currentState: unknown = window.history.state
+
+  if (typeof currentState === 'object' && currentState !== null) {
+    return { ...currentState }
+  }
+
+  return {}
+}
+
+const addGameToUrl = (gameSlug: string): void => {
+  const url = new URL(window.location.href)
+
+  if (url.searchParams.get(GAME_QUERY_PARAMETER) === gameSlug) return
+
+  url.searchParams.set(GAME_QUERY_PARAMETER, gameSlug)
+
+  window.history.pushState(
+    {
+      ...getHistoryState(),
+      [DIALOG_HISTORY_STATE]: true,
+    },
+    '',
+    url,
+  )
+}
+
+const removeGameFromUrl = (): void => {
+  const url = new URL(window.location.href)
+  const state = getHistoryState()
+
+  url.searchParams.delete(GAME_QUERY_PARAMETER)
+  delete state[DIALOG_HISTORY_STATE]
+  window.history.replaceState(state, '', url)
+}
 
 const formatCompactNumber = (value: number): string => {
   if (value < 1000) return value.toString()
@@ -440,8 +486,17 @@ const renderGameDetails = (
   dialog.replaceChildren(hero, body)
 }
 
-export const openGameDetailsDialog = (gameSlug: string): void => {
-  if (document.querySelector('.game-details-overlay')) return
+export const openGameDetailsDialog = (
+  gameSlug: string,
+  updateUrl = true,
+): void => {
+  if (activeGameDialog?.gameSlug === gameSlug) return
+
+  activeGameDialog?.destroy()
+
+  if (updateUrl) {
+    addGameToUrl(gameSlug)
+  }
 
   const previouslyFocused =
     document.activeElement instanceof HTMLElement
@@ -467,13 +522,37 @@ export const openGameDetailsDialog = (gameSlug: string): void => {
     overlay.remove()
     document.body.style.overflow = previousBodyOverflow
 
+    if (activeGameDialog?.gameSlug === gameSlug) {
+      activeGameDialog = null
+    }
+
     if (previouslyFocused?.isConnected) {
       previouslyFocused.focus()
     }
   }
 
-  const closeDialog = (): void => {
+  const destroyDialog = (): void => {
     if (isClosing) return
+
+    isClosing = true
+    requestController?.abort()
+    finishClosing()
+  }
+
+  const closeDialog = (shouldUpdateUrl = true): void => {
+    if (isClosing) return
+
+    if (shouldUpdateUrl) {
+      const isDialogHistoryEntry =
+        window.history.state?.[DIALOG_HISTORY_STATE] === true
+
+      if (isDialogHistoryEntry) {
+        window.history.back()
+        return
+      }
+
+      removeGameFromUrl()
+    }
 
     isClosing = true
     requestController?.abort()
@@ -545,7 +624,9 @@ export const openGameDetailsDialog = (gameSlug: string): void => {
     }
   }
 
-  closeButton.addEventListener('click', closeDialog)
+  closeButton.addEventListener('click', () => {
+    closeDialog()
+  })
   overlay.addEventListener('click', (event) => {
     if (event.target === overlay) closeDialog()
   })
@@ -554,10 +635,28 @@ export const openGameDetailsDialog = (gameSlug: string): void => {
   overlay.append(dialog)
   document.body.append(overlay)
   document.body.style.overflow = 'hidden'
+  activeGameDialog = {
+    gameSlug,
+    close: closeDialog,
+    destroy: destroyDialog,
+  }
   void loadGame()
 
   window.requestAnimationFrame(() => {
     overlay.classList.add('game-details-overlay--visible')
     closeButton.focus()
   })
+}
+
+export const syncGameDetailsDialogWithUrl = (): void => {
+  const gameSlug = new URL(window.location.href).searchParams.get(
+    GAME_QUERY_PARAMETER,
+  )
+
+  if (gameSlug) {
+    openGameDetailsDialog(gameSlug, false)
+    return
+  }
+
+  activeGameDialog?.close(false)
 }
