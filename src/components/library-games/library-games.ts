@@ -113,7 +113,9 @@ const createGameCard = (game: ApiGame): HTMLElement => {
   detailsButton.type = 'button'
   detailsButton.textContent = 'Details'
   detailsButton.setAttribute('aria-label', `View details for ${game.name}`)
-  detailsButton.addEventListener('click', openGameDetailsDialog)
+  detailsButton.addEventListener('click', () => {
+    openGameDetailsDialog(game.slug)
+  })
 
   identity.append(title, category)
   header.append(identity, desktopPrice)

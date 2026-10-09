@@ -1,19 +1,106 @@
 import './game-details-dialog.scss'
 
+import { getGameComments } from '../../api/comments'
+import { getGameDetails } from '../../api/games'
+import type {
+  ApiComment,
+  ApiCommentsResponse,
+  ApiGameDetails,
+  ApiGameRecord,
+} from '../../api/types'
+import { createAppUrl } from '../../app/router'
 import favoriteHeartIcon from '../../assets/icons/favorite-heart.svg'
 import ratingStarIcon from '../../assets/icons/rating-star.svg'
-import { tukoniComments, tukoniGameDetails } from '../../data/game-details'
-
-import type { GameComment } from '../../types/game-details'
+import {
+  createApiEmptyState,
+  createApiErrorBanner,
+  createApiSkeleton,
+  showSnackbar,
+} from '../api-feedback/api-feedback'
 
 const DIALOG_ANIMATION_DURATION = 200
 const TEXTAREA_MAX_HEIGHT = 88
+const GAME_QUERY_PARAMETER = 'game'
+const DIALOG_HISTORY_STATE = 'gameDialog'
+
+interface ActiveGameDialog {
+  gameSlug: string
+  close: (updateUrl: boolean) => void
+  destroy: () => void
+}
+
+let activeGameDialog: ActiveGameDialog | null = null
+
+const getHistoryState = (): Record<string, unknown> => {
+  const currentState: unknown = window.history.state
+
+  if (typeof currentState === 'object' && currentState !== null) {
+    return { ...currentState }
+  }
+
+  return {}
+}
+
+const addGameToUrl = (gameSlug: string): void => {
+  const url = new URL(window.location.href)
+
+  if (url.searchParams.get(GAME_QUERY_PARAMETER) === gameSlug) return
+
+  url.searchParams.set(GAME_QUERY_PARAMETER, gameSlug)
+
+  window.history.pushState(
+    {
+      ...getHistoryState(),
+      [DIALOG_HISTORY_STATE]: true,
+    },
+    '',
+    url,
+  )
+}
+
+const removeGameFromUrl = (): void => {
+  const url = new URL(window.location.href)
+  const state = getHistoryState()
+
+  url.searchParams.delete(GAME_QUERY_PARAMETER)
+  delete state[DIALOG_HISTORY_STATE]
+  window.history.replaceState(state, '', url)
+}
 
 const formatCompactNumber = (value: number): string => {
   if (value < 1000) return value.toString()
 
   const compactValue = Math.floor(value / 100) / 10
   return `${compactValue}K`
+}
+
+const formatRelativeDate = (dateValue: string): string => {
+  const timestamp = Date.parse(dateValue)
+
+  if (Number.isNaN(timestamp)) return ''
+
+  const elapsedMilliseconds = Math.max(0, Date.now() - timestamp)
+  const elapsedMinutes = Math.floor(elapsedMilliseconds / 60_000)
+
+  if (elapsedMinutes < 1) return 'Just now'
+  if (elapsedMinutes < 60) {
+    return `${elapsedMinutes} minute${elapsedMinutes === 1 ? '' : 's'} ago`
+  }
+
+  const elapsedHours = Math.floor(elapsedMinutes / 60)
+
+  if (elapsedHours < 24) {
+    return `${elapsedHours} hour${elapsedHours === 1 ? '' : 's'} ago`
+  }
+
+  const elapsedDays = Math.floor(elapsedHours / 24)
+
+  if (elapsedDays < 7) {
+    return `${elapsedDays} day${elapsedDays === 1 ? '' : 's'} ago`
+  }
+
+  const elapsedWeeks = Math.floor(elapsedDays / 7)
+  return `${elapsedWeeks} week${elapsedWeeks === 1 ? '' : 's'} ago`
 }
 
 const createTextElement = (
@@ -48,7 +135,7 @@ const createMetric = (
   return metric
 }
 
-const createComment = (comment: GameComment): HTMLElement => {
+const createComment = (comment: ApiComment): HTMLElement => {
   const item = document.createElement('div')
   item.className = 'game-details__comment'
 
@@ -58,7 +145,7 @@ const createComment = (comment: GameComment): HTMLElement => {
   const avatar = createTextElement(
     'span',
     'game-details__comment-avatar',
-    comment.authorName.charAt(0),
+    comment.authorName.charAt(0).toUpperCase(),
   )
   avatar.setAttribute('aria-hidden', 'true')
 
@@ -70,7 +157,8 @@ const createComment = (comment: GameComment): HTMLElement => {
 
   const time = document.createElement('time')
   time.className = 'game-details__comment-time'
-  time.textContent = comment.timeAgo
+  time.dateTime = comment.createdAt
+  time.textContent = formatRelativeDate(comment.createdAt)
 
   const text = createTextElement(
     'p',
@@ -82,7 +170,7 @@ const createComment = (comment: GameComment): HTMLElement => {
   likeButton.type = 'button'
   likeButton.className = 'game-details__comment-like'
 
-  let isLiked = comment.isLiked
+  let isLiked = comment.isLikedByCurrentUser
   let likesCount = comment.likesCount
 
   const updateLikeButton = (): void => {
@@ -108,14 +196,93 @@ const createComment = (comment: GameComment): HTMLElement => {
   return item
 }
 
-const createGameDetailsDialog = (): HTMLElement => {
-  const overlay = document.createElement('div')
-  overlay.className = 'game-details-overlay'
+const createRecord = (record: ApiGameRecord): HTMLElement => {
+  const medals = ['🥇', '🥈', '🥉']
+  const item = document.createElement('li')
+  item.className = 'game-details__record'
 
-  const dialog = document.createElement('div')
-  dialog.className = 'game-details'
-  dialog.setAttribute('role', 'dialog')
-  dialog.setAttribute('aria-modal', 'true')
+  const player = createTextElement(
+    'span',
+    'game-details__record-player',
+    `${medals[record.position - 1] ?? `#${record.position}`} ${record.playerName}`,
+  )
+  const score = createTextElement(
+    'span',
+    'game-details__record-score',
+    `${record.score.toLocaleString('en-US')} pts`,
+  )
+  const time = document.createElement('time')
+  time.className = 'game-details__record-time'
+  time.dateTime = record.achievedAt
+  time.textContent = formatRelativeDate(record.achievedAt)
+
+  item.append(player, score, time)
+  return item
+}
+
+const createCloseButton = (): HTMLButtonElement => {
+  const closeButton = document.createElement('button')
+  closeButton.type = 'button'
+  closeButton.className = 'game-details__close'
+  closeButton.setAttribute('aria-label', 'Close game details')
+  closeButton.textContent = '×'
+
+  return closeButton
+}
+
+const renderLoadingState = (
+  dialog: HTMLElement,
+  closeButton: HTMLButtonElement,
+): void => {
+  dialog.removeAttribute('aria-labelledby')
+  dialog.removeAttribute('aria-describedby')
+  dialog.setAttribute('aria-label', 'Loading game details')
+
+  const hero = createApiSkeleton(
+    'game-details__hero game-details__hero--loading',
+    'Loading game artwork',
+  )
+  hero.append(closeButton)
+
+  const body = document.createElement('div')
+  body.className = 'game-details__body'
+  body.append(
+    createApiSkeleton(
+      'game-details__content-skeleton',
+      'Loading game information',
+    ),
+  )
+
+  dialog.replaceChildren(hero, body)
+}
+
+const renderErrorState = (
+  dialog: HTMLElement,
+  closeButton: HTMLButtonElement,
+  onRetry: () => void,
+): void => {
+  dialog.setAttribute('aria-label', 'Unable to load game details')
+
+  const hero = document.createElement('div')
+  hero.className = 'game-details__hero game-details__hero--error'
+  hero.append(closeButton)
+
+  const body = document.createElement('div')
+  body.className = 'game-details__body'
+  body.append(
+    createApiErrorBanner('Unable to load the selected game.', onRetry),
+  )
+
+  dialog.replaceChildren(hero, body)
+}
+
+const renderGameDetails = (
+  dialog: HTMLElement,
+  closeButton: HTMLButtonElement,
+  game: ApiGameDetails,
+  commentsResponse: ApiCommentsResponse,
+): void => {
+  dialog.removeAttribute('aria-label')
   dialog.setAttribute('aria-labelledby', 'game-details-title')
   dialog.setAttribute('aria-describedby', 'game-details-description')
 
@@ -124,14 +291,8 @@ const createGameDetailsDialog = (): HTMLElement => {
 
   const heroImage = document.createElement('img')
   heroImage.className = 'game-details__hero-image'
-  heroImage.src = tukoniGameDetails.heroImage
-  heroImage.alt = `${tukoniGameDetails.name} artwork`
-
-  const closeButton = document.createElement('button')
-  closeButton.type = 'button'
-  closeButton.className = 'game-details__close'
-  closeButton.setAttribute('aria-label', 'Close game details')
-  closeButton.textContent = '×'
+  heroImage.src = createAppUrl(game.heroImage)
+  heroImage.alt = `${game.name} artwork`
 
   hero.append(heroImage, closeButton)
 
@@ -141,11 +302,7 @@ const createGameDetailsDialog = (): HTMLElement => {
   const heading = document.createElement('div')
   heading.className = 'game-details__heading'
 
-  const title = createTextElement(
-    'h2',
-    'game-details__title',
-    tukoniGameDetails.name,
-  )
+  const title = createTextElement('h2', 'game-details__title', game.name)
   title.id = 'game-details-title'
 
   const metrics = document.createElement('div')
@@ -153,13 +310,13 @@ const createGameDetailsDialog = (): HTMLElement => {
   metrics.append(
     createMetric(
       ratingStarIcon,
-      tukoniGameDetails.rating.toString(),
-      `Rating: ${tukoniGameDetails.rating}`,
+      game.rating.toString(),
+      `Rating: ${game.rating}`,
     ),
     createMetric(
       favoriteHeartIcon,
-      formatCompactNumber(tukoniGameDetails.likesCount),
-      `${formatCompactNumber(tukoniGameDetails.likesCount)} likes`,
+      formatCompactNumber(game.likesCount),
+      `${formatCompactNumber(game.likesCount)} likes`,
     ),
   )
 
@@ -168,7 +325,7 @@ const createGameDetailsDialog = (): HTMLElement => {
   const description = createTextElement(
     'p',
     'game-details__description',
-    tukoniGameDetails.description,
+    game.fullDescription,
   )
   description.id = 'game-details-description'
 
@@ -176,16 +333,15 @@ const createGameDetailsDialog = (): HTMLElement => {
   specs.className = 'game-details__specs'
 
   const specItems = [
-    ['Genre', tukoniGameDetails.specs.genre],
-    ['Players', tukoniGameDetails.specs.players],
-    ['Duration', tukoniGameDetails.specs.duration],
-    ['Price', tukoniGameDetails.specs.price],
+    ['Genre', game.specs.genre],
+    ['Players', game.specs.players],
+    ['Duration', game.specs.duration],
+    ['Price', game.specs.price],
   ]
 
   specItems.forEach(([label, value]) => {
     const item = document.createElement('div')
     item.className = 'game-details__spec'
-
     item.append(
       createTextElement('dt', 'game-details__spec-label', label),
       createTextElement('dd', 'game-details__spec-value', value),
@@ -218,7 +374,7 @@ const createGameDetailsDialog = (): HTMLElement => {
     'Add to Favorites',
   )
 
-  let isFavorite = false
+  let isFavorite = game.isLikedByCurrentUser
 
   const updateFavoriteButton = (): void => {
     favoriteButton.classList.toggle(
@@ -258,31 +414,7 @@ const createGameDetailsDialog = (): HTMLElement => {
 
   const recordsList = document.createElement('ol')
   recordsList.className = 'game-details__records'
-
-  const medals = ['🥇', '🥈', '🥉']
-
-  tukoniGameDetails.records.forEach((record) => {
-    const item = document.createElement('li')
-    item.className = 'game-details__record'
-
-    const player = createTextElement(
-      'span',
-      'game-details__record-player',
-      `${medals[record.position - 1]} ${record.playerName}`,
-    )
-    const score = createTextElement(
-      'span',
-      'game-details__record-score',
-      `${record.score.toLocaleString('en-US')} pts`,
-    )
-    const time = document.createElement('time')
-    time.className = 'game-details__record-time'
-    time.textContent = record.timeAgo
-
-    item.append(player, score, time)
-    recordsList.append(item)
-  })
-
+  recordsList.append(...game.topRecords.map(createRecord))
   records.append(recordsTitle, recordsList)
 
   const comments = document.createElement('section')
@@ -292,7 +424,7 @@ const createGameDetailsDialog = (): HTMLElement => {
   const commentsTitle = createTextElement(
     'h3',
     'game-details__section-title',
-    `Comments (${tukoniComments.length})`,
+    `Comments (${commentsResponse.meta.totalComments})`,
   )
   commentsTitle.id = 'comments-title'
 
@@ -337,20 +469,34 @@ const createGameDetailsDialog = (): HTMLElement => {
 
   const commentsList = document.createElement('div')
   commentsList.className = 'game-details__comments'
-  commentsList.append(
-    ...tukoniComments.map((comment) => createComment({ ...comment })),
-  )
+
+  if (commentsResponse.data.length === 0) {
+    commentsList.append(
+      createApiEmptyState(
+        'No comments yet',
+        'Be the first to share your thoughts.',
+      ),
+    )
+  } else {
+    commentsList.append(...commentsResponse.data.map(createComment))
+  }
 
   comments.append(commentsTitle, commentForm, commentsList)
   body.append(heading, description, specs, actions, records, comments)
-  dialog.append(hero, body)
-  overlay.append(dialog)
-
-  return overlay
+  dialog.replaceChildren(hero, body)
 }
 
-export const openGameDetailsDialog = (): void => {
-  if (document.querySelector('.game-details-overlay')) return
+export const openGameDetailsDialog = (
+  gameSlug: string,
+  updateUrl = true,
+): void => {
+  if (activeGameDialog?.gameSlug === gameSlug) return
+
+  activeGameDialog?.destroy()
+
+  if (updateUrl) {
+    addGameToUrl(gameSlug)
+  }
 
   const previouslyFocused =
     document.activeElement instanceof HTMLElement
@@ -358,30 +504,58 @@ export const openGameDetailsDialog = (): void => {
       : null
 
   const previousBodyOverflow = document.body.style.overflow
-  const overlay = createGameDetailsDialog()
-  const dialog = overlay.querySelector<HTMLElement>('.game-details')
-  const closeButton = overlay.querySelector<HTMLButtonElement>(
-    '.game-details__close',
-  )
+  const overlay = document.createElement('div')
+  overlay.className = 'game-details-overlay'
 
-  if (!dialog || !closeButton) return
+  const dialog = document.createElement('div')
+  dialog.className = 'game-details'
+  dialog.setAttribute('role', 'dialog')
+  dialog.setAttribute('aria-modal', 'true')
 
+  const closeButton = createCloseButton()
+  let requestController: AbortController | null = null
   let isClosing = false
 
   const finishClosing = (): void => {
+    requestController?.abort()
     document.removeEventListener('keydown', handleKeydown)
     overlay.remove()
     document.body.style.overflow = previousBodyOverflow
+
+    if (activeGameDialog?.gameSlug === gameSlug) {
+      activeGameDialog = null
+    }
 
     if (previouslyFocused?.isConnected) {
       previouslyFocused.focus()
     }
   }
 
-  const closeDialog = (): void => {
+  const destroyDialog = (): void => {
     if (isClosing) return
 
     isClosing = true
+    requestController?.abort()
+    finishClosing()
+  }
+
+  const closeDialog = (shouldUpdateUrl = true): void => {
+    if (isClosing) return
+
+    if (shouldUpdateUrl) {
+      const isDialogHistoryEntry =
+        window.history.state?.[DIALOG_HISTORY_STATE] === true
+
+      if (isDialogHistoryEntry) {
+        window.history.back()
+        return
+      }
+
+      removeGameFromUrl()
+    }
+
+    isClosing = true
+    requestController?.abort()
     overlay.classList.remove('game-details-overlay--visible')
     window.setTimeout(finishClosing, DIALOG_ANIMATION_DURATION)
   }
@@ -415,17 +589,74 @@ export const openGameDetailsDialog = (): void => {
     }
   }
 
-  closeButton.addEventListener('click', closeDialog)
+  const loadGame = async (isRetry = false): Promise<void> => {
+    requestController?.abort()
+    const controller = new AbortController()
+    requestController = controller
+    renderLoadingState(dialog, closeButton)
+
+    try {
+      const [detailsResponse, commentsResponse] = await Promise.all([
+        getGameDetails(gameSlug, controller.signal),
+        getGameComments(gameSlug, controller.signal),
+      ])
+
+      if (controller.signal.aborted || !overlay.isConnected) return
+
+      renderGameDetails(
+        dialog,
+        closeButton,
+        detailsResponse.data,
+        commentsResponse,
+      )
+
+      if (isRetry) {
+        showSnackbar('Game details loaded successfully.', 'success')
+      }
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') return
+      if (!overlay.isConnected) return
+
+      showSnackbar('Unable to load game details.', 'error')
+      renderErrorState(dialog, closeButton, () => {
+        void loadGame(true)
+      })
+    }
+  }
+
+  closeButton.addEventListener('click', () => {
+    closeDialog()
+  })
   overlay.addEventListener('click', (event) => {
     if (event.target === overlay) closeDialog()
   })
   document.addEventListener('keydown', handleKeydown)
 
+  overlay.append(dialog)
   document.body.append(overlay)
   document.body.style.overflow = 'hidden'
+  activeGameDialog = {
+    gameSlug,
+    close: closeDialog,
+    destroy: destroyDialog,
+  }
+  void loadGame()
 
   window.requestAnimationFrame(() => {
     overlay.classList.add('game-details-overlay--visible')
     closeButton.focus()
   })
+}
+
+export const syncGameDetailsDialogWithUrl = (): void => {
+  const gameSlug = new URL(window.location.href).searchParams.get(
+    GAME_QUERY_PARAMETER,
+  )
+
+  if (gameSlug) {
+    openGameDetailsDialog(gameSlug, false)
+    return
+  }
+
+  activeGameDialog?.close(false)
 }

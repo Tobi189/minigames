@@ -1,4 +1,5 @@
 import { createFooter } from '../components/footer/footer'
+import { syncGameDetailsDialogWithUrl } from '../components/game-details-dialog/game-details-dialog'
 import { createHeader } from '../components/header/header'
 import { createHomePage } from '../pages/home/home-page'
 import { createLibraryPage } from '../pages/library/library-page'
@@ -41,6 +42,14 @@ export const createApp = (): HTMLElement => {
   main.id = 'main-content'
 
   const footer = createFooter()
+  let renderedLocationKey = ''
+
+  const getLocationKey = (): string => {
+    const url = new URL(window.location.href)
+    url.searchParams.delete('game')
+
+    return `${url.pathname}?${url.searchParams.toString()}`
+  }
 
   const renderRoute = (): void => {
     const route = getCurrentRoute()
@@ -48,13 +57,28 @@ export const createApp = (): HTMLElement => {
 
     main.replaceChildren(page)
     updateActiveNavigation(header, route)
+    renderedLocationKey = getLocationKey()
   }
 
-  window.addEventListener('popstate', renderRoute)
-  window.addEventListener(ROUTE_CHANGE_EVENT, renderRoute)
+  const handlePopState = (): void => {
+    if (getLocationKey() !== renderedLocationKey) {
+      renderRoute()
+    }
+
+    syncGameDetailsDialogWithUrl()
+  }
+
+  const handleRouteChange = (): void => {
+    renderRoute()
+    syncGameDetailsDialogWithUrl()
+  }
+
+  window.addEventListener('popstate', handlePopState)
+  window.addEventListener(ROUTE_CHANGE_EVENT, handleRouteChange)
 
   app.append(header, main, footer)
   renderRoute()
+  window.requestAnimationFrame(syncGameDetailsDialogWithUrl)
 
   return app
 }

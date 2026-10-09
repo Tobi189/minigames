@@ -36,6 +36,7 @@
 }
 
 .game-details {
+  position: relative;
   overflow-x: hidden;
   overflow-y: auto;
 
@@ -63,6 +64,11 @@
 
     width: 100%;
     height: tokens.$game-details-hero-height;
+
+    &--loading,
+    &--error {
+      background-color: tokens.$color-outline;
+    }
   }
 
   &__hero-image {
@@ -106,6 +112,11 @@
     gap: tokens.$size-3;
 
     padding: tokens.$size-3;
+  }
+
+  &__content-skeleton {
+    width: 100%;
+    height: 520px;
   }
 
   &__heading {

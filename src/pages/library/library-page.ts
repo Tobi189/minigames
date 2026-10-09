@@ -1,5 +1,12 @@
+import './library-page.scss'
+
 import { getCategories } from '../../api/categories'
 import { getGames } from '../../api/games'
+import {
+  createApiErrorBanner,
+  createApiSkeleton,
+  showSnackbar,
+} from '../../components/api-feedback/api-feedback'
 import { createLibraryFilters } from '../../components/library-filters/library-filters'
 import {
   createLibraryGames,
@@ -14,55 +21,57 @@ export const createLibraryPage = (): HTMLElement => {
   const page = document.createElement('div')
   page.className = 'library-page'
 
-  const filtersStatus = document.createElement('section')
-  filtersStatus.className = 'library-filters-status'
-  filtersStatus.textContent = 'Loading filters…'
+  const filtersSlot = document.createElement('div')
+  filtersSlot.className = 'library-page__filters-slot'
 
-  const gamesStatus = document.createElement('section')
-  gamesStatus.className = 'library-games library-games-status'
-  gamesStatus.setAttribute('aria-live', 'polite')
-  gamesStatus.textContent = 'Waiting for filters…'
+  const gamesSlot = document.createElement('section')
+  gamesSlot.className = 'library-games library-page__games-slot'
+  gamesSlot.setAttribute('aria-live', 'polite')
 
-  const paginationStatus = document.createElement('div')
-  paginationStatus.className = 'library-pagination-status'
+  const paginationSlot = document.createElement('div')
+  paginationSlot.className = 'library-page__pagination-slot'
+
+  const showFiltersLoading = (): void => {
+    filtersSlot.replaceChildren(
+      createApiSkeleton(
+        'library-page__filters-skeleton',
+        'Loading game filters',
+      ),
+    )
+  }
+
+  const showGamesLoading = (): void => {
+    gamesSlot.setAttribute('aria-busy', 'true')
+    gamesSlot.setAttribute('aria-label', 'Loading games')
+    gamesSlot.replaceChildren(createLibraryGamesSkeleton())
+    paginationSlot.replaceChildren()
+  }
 
   const renderFiltersError = (): void => {
-    const message = document.createElement('p')
-    message.textContent = 'Unable to load game categories.'
-
-    const retryButton = document.createElement('button')
-    retryButton.type = 'button'
-    retryButton.textContent = 'Retry'
-
-    retryButton.addEventListener('click', () => {
-      void loadFilters()
-    })
-
-    filtersStatus.replaceChildren(message, retryButton)
+    showSnackbar('Unable to load game categories.', 'error')
+    filtersSlot.replaceChildren(
+      createApiErrorBanner('Unable to load game categories.', () => {
+        void loadFilters(true)
+      }),
+    )
   }
 
   const renderGamesError = (state: LibraryState): void => {
-    gamesStatus.setAttribute('aria-busy', 'false')
-    gamesStatus.removeAttribute('aria-label')
-
-    const message = document.createElement('p')
-    message.textContent = 'Unable to load games.'
-
-    const retryButton = document.createElement('button')
-    retryButton.type = 'button'
-    retryButton.textContent = 'Retry'
-
-    retryButton.addEventListener('click', () => {
-      void loadGames(state)
-    })
-
-    gamesStatus.replaceChildren(message, retryButton)
+    gamesSlot.setAttribute('aria-busy', 'false')
+    gamesSlot.removeAttribute('aria-label')
+    showSnackbar('Unable to load games.', 'error')
+    gamesSlot.replaceChildren(
+      createApiErrorBanner('Unable to load games.', () => {
+        void loadGames(state, true)
+      }),
+    )
   }
 
-  const loadGames = async (state: LibraryState): Promise<void> => {
-    gamesStatus.setAttribute('aria-busy', 'true')
-    gamesStatus.setAttribute('aria-label', 'Loading games')
-    gamesStatus.replaceChildren(createLibraryGamesSkeleton())
+  const loadGames = async (
+    state: LibraryState,
+    isRetry = false,
+  ): Promise<void> => {
+    showGamesLoading()
 
     try {
       const response = await getGames({
@@ -72,11 +81,14 @@ export const createLibraryPage = (): HTMLElement => {
         sort: state.sort,
       })
 
+      if (!page.isConnected) return
+
       const games = createLibraryGames(response.data)
+      const hasGames = response.data.length > 0
 
       const pagination = createLibraryPagination({
-        currentPage: response.meta.page,
-        totalPages: response.meta.totalPages,
+        currentPage: hasGames ? response.meta.page : 1,
+        totalPages: hasGames ? response.meta.totalPages : 1,
 
         onPageChange: (pageNumber) => {
           navigateToLibraryState({
@@ -86,18 +98,27 @@ export const createLibraryPage = (): HTMLElement => {
         },
       })
 
-      gamesStatus.replaceWith(games)
-      paginationStatus.replaceWith(pagination)
+      gamesSlot.setAttribute('aria-busy', 'false')
+      gamesSlot.removeAttribute('aria-label')
+      gamesSlot.replaceChildren(...games.childNodes)
+      paginationSlot.replaceChildren(pagination)
+
+      if (isRetry) {
+        showSnackbar('Games loaded successfully.', 'success')
+      }
     } catch {
+      if (!page.isConnected) return
       renderGamesError(state)
     }
   }
 
-  const loadFilters = async (): Promise<void> => {
-    filtersStatus.textContent = 'Loading filters…'
+  const loadFilters = async (isRetry = false): Promise<void> => {
+    showFiltersLoading()
 
     try {
       const response = await getCategories()
+
+      if (!page.isConnected) return
 
       const defaultCategory =
         response.data.find((category) => category.isDefault)?.slug ?? 'all'
@@ -125,19 +146,19 @@ export const createLibraryPage = (): HTMLElement => {
         },
       })
 
-      filtersStatus.replaceWith(filters)
+      filtersSlot.replaceChildren(filters)
       void loadGames(state)
+
+      if (isRetry) {
+        showSnackbar('Game categories loaded successfully.', 'success')
+      }
     } catch {
+      if (!page.isConnected) return
       renderFiltersError()
     }
   }
 
-  page.append(
-    createLibraryIntro(),
-    filtersStatus,
-    gamesStatus,
-    paginationStatus,
-  )
+  page.append(createLibraryIntro(), filtersSlot, gamesSlot, paginationSlot)
 
   void loadFilters()
 
