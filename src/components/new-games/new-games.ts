@@ -223,10 +223,10 @@ export const createNewGames = (): HTMLElement => {
       startTimer()
     })
 
-    cards.forEach((card) => {
+    cards.forEach((card, index) => {
       card.addEventListener('click', () => {
         if (suppressClick) return
-        openGameDetailsDialog()
+        openGameDetailsDialog(games[index].slug)
       })
     })
 
