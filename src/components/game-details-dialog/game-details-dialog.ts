@@ -1,7 +1,11 @@
 import './game-details-dialog.scss'
 
 import { ApiError } from '../../api/client'
-import { createGameComment, getGameComments } from '../../api/comments'
+import {
+  createGameComment,
+  getGameComments,
+  toggleCommentLike,
+} from '../../api/comments'
 import { getGameDetails, toggleGameFavorite } from '../../api/games'
 import type {
   ApiComment,
@@ -191,6 +195,7 @@ const createComment = (
 
   let isLiked = comment.isLikedByCurrentUser
   let likesCount = comment.likesCount
+  let isLikePending = false
 
   const updateLikeButton = (): void => {
     likeButton.classList.toggle('game-details__comment-like--active', isLiked)
@@ -202,10 +207,56 @@ const createComment = (
     likeButton.textContent = `${isLiked ? '♥' : '♡'} ${likesCount}`
   }
 
+  const setLikePending = (pending: boolean): void => {
+    isLikePending = pending
+    likeButton.disabled = pending
+    likeButton.setAttribute('aria-busy', String(pending))
+
+    if (pending) {
+      likeButton.textContent = '…'
+    } else {
+      updateLikeButton()
+    }
+  }
+
   likeButton.addEventListener('click', () => {
-    isLiked = !isLiked
-    likesCount += isLiked ? 1 : -1
-    updateLikeButton()
+    if (isLikePending) return
+
+    const session = getActiveAppSession()
+
+    if (!session) {
+      showSnackbar('Log in to like comments.', 'error')
+      openAuthDialog('login')
+      return
+    }
+
+    setLikePending(true)
+
+    void toggleCommentLike(comment.commentId, session.email)
+      .then((response) => {
+        isLiked = response.data.isLikedByCurrentUser
+        likesCount = response.data.likesCount
+        showSnackbar(
+          isLiked ? 'Comment liked.' : 'Comment like removed.',
+          'success',
+        )
+      })
+      .catch((error: unknown) => {
+        if (error instanceof ApiError) {
+          showSnackbar(
+            'Unable to update comment like. Please try again.',
+            'error',
+          )
+        } else {
+          showSnackbar(
+            'Comment like result is unknown. Refresh comments before trying again.',
+            'error',
+          )
+        }
+      })
+      .finally(() => {
+        setLikePending(false)
+      })
   })
 
   updateLikeButton()

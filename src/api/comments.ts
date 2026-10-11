@@ -1,4 +1,6 @@
 import type {
+  ApiCommentLikeBody,
+  ApiCommentLikeResponse,
   ApiCommentsResponse,
   ApiCreateCommentBody,
   ApiCreateCommentResponse,
@@ -37,6 +39,20 @@ export const createGameComment = (
   return apiPost<ApiCreateCommentResponse, ApiCreateCommentBody>(
     endpoint,
     body,
+    signal,
+  )
+}
+
+export const toggleCommentLike = (
+  commentId: string,
+  userEmail: string,
+  signal?: AbortSignal,
+): Promise<ApiCommentLikeResponse> => {
+  const endpoint = `/comments/${encodeURIComponent(commentId)}/like`
+
+  return apiPost<ApiCommentLikeResponse, ApiCommentLikeBody>(
+    endpoint,
+    { userEmail },
     signal,
   )
 }
