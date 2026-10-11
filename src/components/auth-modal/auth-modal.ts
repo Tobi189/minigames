@@ -1,11 +1,19 @@
 import './auth-modal.scss'
+import { startAppSession } from '../../auth/app-session'
 import type {
   AuthField,
   AuthFormValues,
   AuthMode,
 } from '../../auth/auth-validation'
 import { isAuthFormValid, validateAuthField } from '../../auth/auth-validation'
+import {
+  getAuthenticationErrorMessage,
+  loginWithEmail,
+  loginWithGoogle,
+  registerWithEmail,
+} from '../../auth/firebase-auth'
 import googleIcon from '../../assets/Vector.png'
+import { showSnackbar } from '../api-feedback/api-feedback'
 
 interface FieldDefinition {
   name: AuthField
@@ -14,6 +22,8 @@ interface FieldDefinition {
   placeholder: string
   autocomplete: string
 }
+
+type PendingAction = 'email' | 'google'
 
 const EMPTY_FORM_VALUES: AuthFormValues = {
   username: '',
@@ -83,6 +93,7 @@ export const createAuthModal = (
   modal.setAttribute('aria-labelledby', 'auth-modal-title')
 
   let currentTab = initialTab
+  let isPending = false
 
   const tabsContainer = document.createElement('div')
   tabsContainer.className = 'auth-modal__tabs'
@@ -113,6 +124,23 @@ export const createAuthModal = (
     registerTab.classList.toggle('active', !isLogin)
     loginTab.setAttribute('aria-selected', String(isLogin))
     registerTab.setAttribute('aria-selected', String(!isLogin))
+  }
+
+  const closeModal = (): void => {
+    if (isPending) return
+
+    document.removeEventListener('keydown', handleKeydown)
+    overlay.remove()
+    document.body.style.overflow = ''
+  }
+
+  const finishAuthentication = (
+    profile: Parameters<typeof startAppSession>[0],
+  ): void => {
+    startAppSession(profile)
+    isPending = false
+    showSnackbar('Authentication completed successfully.', 'success')
+    closeModal()
   }
 
   const renderContent = (): void => {
@@ -149,12 +177,13 @@ export const createAuthModal = (
     const submitButton = document.createElement('button')
     submitButton.type = 'submit'
     submitButton.className = 'btn btn--primary'
-    submitButton.textContent =
-      currentTab === 'login' ? 'Login' : 'Create Account'
+
+    const submitLabel = currentTab === 'login' ? 'Login' : 'Create Account'
+    submitButton.textContent = submitLabel
     submitButton.disabled = true
 
     const updateSubmitState = (): void => {
-      submitButton.disabled = !isAuthFormValid(currentTab, values)
+      submitButton.disabled = isPending || !isAuthFormValid(currentTab, values)
     }
 
     const renderFieldError = (field: AuthField): void => {
@@ -214,11 +243,13 @@ export const createAuthModal = (
       form.append(group)
     })
 
+    let forgotPasswordLink: HTMLAnchorElement | null = null
+
     if (currentTab === 'login') {
       const forgotPassword = document.createElement('div')
       forgotPassword.className = 'auth-form__forgot'
 
-      const forgotPasswordLink = document.createElement('a')
+      forgotPasswordLink = document.createElement('a')
       forgotPasswordLink.href = '#'
       forgotPasswordLink.textContent = 'Forgot Password?'
       forgotPasswordLink.addEventListener('click', (event) => {
@@ -242,16 +273,14 @@ export const createAuthModal = (
     googleImage.width = 20
     googleImage.height = 20
 
-    googleButton.append(
-      googleImage,
-      currentTab === 'login' ? 'Continue with Google' : 'Sign up with Google',
-    )
+    const googleLabel = document.createElement('span')
+    const defaultGoogleLabel =
+      currentTab === 'login' ? 'Continue with Google' : 'Sign up with Google'
+    googleLabel.textContent = defaultGoogleLabel
+
+    googleButton.append(googleImage, googleLabel)
     actions.append(submitButton, googleButton)
     form.append(actions)
-
-    form.addEventListener('submit', (event) => {
-      event.preventDefault()
-    })
 
     const footer = document.createElement('div')
     footer.className = 'auth-modal__footer'
@@ -269,11 +298,74 @@ export const createAuthModal = (
       setTab(currentTab === 'login' ? 'register' : 'login')
     })
 
+    const setPending = (pending: boolean, action: PendingAction): void => {
+      isPending = pending
+      overlay.setAttribute('aria-busy', String(pending))
+      loginTab.disabled = pending
+      registerTab.disabled = pending
+      switchButton.disabled = pending
+      googleButton.disabled = pending
+      inputElements.forEach((input) => {
+        input.disabled = pending
+      })
+
+      if (forgotPasswordLink) {
+        forgotPasswordLink.setAttribute('aria-disabled', String(pending))
+      }
+
+      submitButton.textContent =
+        pending && action === 'email'
+          ? currentTab === 'login'
+            ? 'Logging in…'
+            : 'Creating account…'
+          : submitLabel
+      googleLabel.textContent =
+        pending && action === 'google' ? 'Connecting…' : defaultGoogleLabel
+      updateSubmitState()
+    }
+
+    const handleAuthenticationFailure = (
+      error: unknown,
+      action: PendingAction,
+    ): void => {
+      showSnackbar(getAuthenticationErrorMessage(error), 'error')
+      setPending(false, action)
+    }
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault()
+
+      if (isPending || !isAuthFormValid(currentTab, values)) return
+
+      setPending(true, 'email')
+      const authentication =
+        currentTab === 'login'
+          ? loginWithEmail(values.email, values.password)
+          : registerWithEmail(values.username, values.email, values.password)
+
+      void authentication.then(finishAuthentication).catch((error: unknown) => {
+        handleAuthenticationFailure(error, 'email')
+      })
+    })
+
+    googleButton.addEventListener('click', () => {
+      if (isPending) return
+
+      setPending(true, 'google')
+      void loginWithGoogle()
+        .then(finishAuthentication)
+        .catch((error: unknown) => {
+          handleAuthenticationFailure(error, 'google')
+        })
+    })
+
     footer.append(switchButton)
     contentContainer.append(header, form, footer)
   }
 
   const setTab = (tab: AuthMode): void => {
+    if (isPending) return
+
     currentTab = tab
     setTabState()
     renderContent()
@@ -284,12 +376,6 @@ export const createAuthModal = (
 
   const handleKeydown = (event: KeyboardEvent): void => {
     if (event.key === 'Escape') closeModal()
-  }
-
-  const closeModal = (): void => {
-    document.removeEventListener('keydown', handleKeydown)
-    overlay.remove()
-    document.body.style.overflow = ''
   }
 
   overlay.addEventListener('click', (event) => {
