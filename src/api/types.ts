@@ -145,3 +145,14 @@ export interface ApiCreateCommentBody {
 }
 
 export type ApiCreateCommentResponse = ApiResponse<ApiComment>
+
+export interface ApiCommentLikeBody {
+  userEmail: string
+}
+
+export interface ApiCommentLikeResult {
+  isLikedByCurrentUser: boolean
+  likesCount: number
+}
+
+export type ApiCommentLikeResponse = ApiResponse<ApiCommentLikeResult>
