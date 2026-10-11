@@ -1,12 +1,12 @@
 import logoUrl from '../../assets/logo.svg'
 import './header.scss'
+import { openAuthDialog } from '../../auth/auth-dialog'
 import {
   APP_SESSION_CHANGE_EVENT,
   getActiveAppSession,
   logoutAppSession,
   type AppSession,
 } from '../../auth/app-session'
-import { createAuthModal } from '../auth-modal/auth-modal'
 import { showSnackbar } from '../api-feedback/api-feedback'
 
 import {
@@ -163,7 +163,7 @@ export const createHeader = (): HTMLElement => {
   login.className = 'header__button header__login'
   login.textContent = 'Log In'
   login.addEventListener('click', () => {
-    document.body.appendChild(createAuthModal('login'))
+    openAuthDialog('login')
   })
 
   const signup = document.createElement('button')
@@ -171,7 +171,7 @@ export const createHeader = (): HTMLElement => {
   signup.className = 'header__button header__button--primary header__signup'
   signup.textContent = 'Sign Up'
   signup.addEventListener('click', () => {
-    document.body.appendChild(createAuthModal('register'))
+    openAuthDialog('register')
   })
 
   const tabletSignup = document.createElement('button')
@@ -180,7 +180,7 @@ export const createHeader = (): HTMLElement => {
     'header__button header__button--primary header__tablet-signup'
   tabletSignup.textContent = 'Sign Up'
   tabletSignup.addEventListener('click', () => {
-    document.body.appendChild(createAuthModal('register'))
+    openAuthDialog('register')
   })
 
   const profile = createProfileControls()
