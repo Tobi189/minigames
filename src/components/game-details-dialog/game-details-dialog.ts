@@ -9,6 +9,7 @@ import type {
   ApiGameRecord,
 } from '../../api/types'
 import { createAppUrl } from '../../app/router'
+import { AUTH_QUERY_PARAMETER } from '../../auth/auth-dialog'
 import favoriteHeartIcon from '../../assets/icons/favorite-heart.svg'
 import ratingStarIcon from '../../assets/icons/rating-star.svg'
 import {
@@ -649,9 +650,14 @@ export const openGameDetailsDialog = (
 }
 
 export const syncGameDetailsDialogWithUrl = (): void => {
-  const gameSlug = new URL(window.location.href).searchParams.get(
-    GAME_QUERY_PARAMETER,
-  )
+  const url = new URL(window.location.href)
+
+  if (url.searchParams.has(AUTH_QUERY_PARAMETER)) {
+    activeGameDialog?.destroy()
+    return
+  }
+
+  const gameSlug = url.searchParams.get(GAME_QUERY_PARAMETER)
 
   if (gameSlug) {
     openGameDetailsDialog(gameSlug, false)

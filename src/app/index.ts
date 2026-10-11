@@ -1,6 +1,11 @@
 import { createFooter } from '../components/footer/footer'
 import { syncGameDetailsDialogWithUrl } from '../components/game-details-dialog/game-details-dialog'
 import { createHeader } from '../components/header/header'
+import {
+  AUTH_DIALOG_CHANGE_EVENT,
+  AUTH_QUERY_PARAMETER,
+  syncAuthDialogWithUrl,
+} from '../auth/auth-dialog'
 import { createHomePage } from '../pages/home/home-page'
 import { createLibraryPage } from '../pages/library/library-page'
 import { createNotFoundPage } from '../pages/not-found/not-found-page'
@@ -47,8 +52,27 @@ export const createApp = (): HTMLElement => {
   const getLocationKey = (): string => {
     const url = new URL(window.location.href)
     url.searchParams.delete('game')
+    url.searchParams.delete(AUTH_QUERY_PARAMETER)
 
     return `${url.pathname}?${url.searchParams.toString()}`
+  }
+
+  const syncDialogsWithUrl = (): void => {
+    const hasAuthState = new URL(window.location.href).searchParams.has(
+      AUTH_QUERY_PARAMETER,
+    )
+
+    if (hasAuthState) {
+      // Auth temporarily replaces Game Details. The second game sync restores
+      // it immediately if the authenticated-user guard removes Auth state.
+      syncGameDetailsDialogWithUrl()
+      syncAuthDialogWithUrl()
+      syncGameDetailsDialogWithUrl()
+      return
+    }
+
+    syncAuthDialogWithUrl()
+    syncGameDetailsDialogWithUrl()
   }
 
   const renderRoute = (): void => {
@@ -65,20 +89,21 @@ export const createApp = (): HTMLElement => {
       renderRoute()
     }
 
-    syncGameDetailsDialogWithUrl()
+    syncDialogsWithUrl()
   }
 
   const handleRouteChange = (): void => {
     renderRoute()
-    syncGameDetailsDialogWithUrl()
+    syncDialogsWithUrl()
   }
 
   window.addEventListener('popstate', handlePopState)
   window.addEventListener(ROUTE_CHANGE_EVENT, handleRouteChange)
+  window.addEventListener(AUTH_DIALOG_CHANGE_EVENT, syncDialogsWithUrl)
 
   app.append(header, main, footer)
   renderRoute()
-  window.requestAnimationFrame(syncGameDetailsDialogWithUrl)
+  window.requestAnimationFrame(syncDialogsWithUrl)
 
   return app
 }

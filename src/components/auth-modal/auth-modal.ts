@@ -25,6 +25,16 @@ interface FieldDefinition {
 
 type PendingAction = 'email' | 'google'
 
+export interface AuthModalOptions {
+  onClose?: () => void
+  onModeChange?: (mode: AuthMode) => void
+}
+
+export interface AuthModalInstance {
+  element: HTMLElement
+  destroy: () => void
+}
+
 const EMPTY_FORM_VALUES: AuthFormValues = {
   username: '',
   email: '',
@@ -82,7 +92,8 @@ const REGISTER_FIELDS: FieldDefinition[] = [
 
 export const createAuthModal = (
   initialTab: AuthMode = 'login',
-): HTMLElement => {
+  options: AuthModalOptions = {},
+): AuthModalInstance => {
   const overlay = document.createElement('div')
   overlay.className = 'auth-modal-overlay'
 
@@ -94,6 +105,8 @@ export const createAuthModal = (
 
   let currentTab = initialTab
   let isPending = false
+  let isClosed = false
+  const previousBodyOverflow = document.body.style.overflow
 
   const tabsContainer = document.createElement('div')
   tabsContainer.className = 'auth-modal__tabs'
@@ -126,12 +139,20 @@ export const createAuthModal = (
     registerTab.setAttribute('aria-selected', String(!isLogin))
   }
 
-  const closeModal = (): void => {
-    if (isPending) return
+  const destroyModal = (): void => {
+    if (isClosed) return
 
+    isClosed = true
     document.removeEventListener('keydown', handleKeydown)
     overlay.remove()
-    document.body.style.overflow = ''
+    document.body.style.overflow = previousBodyOverflow
+  }
+
+  const closeModal = (): void => {
+    if (isPending || isClosed) return
+
+    destroyModal()
+    options.onClose?.()
   }
 
   const finishAuthentication = (
@@ -364,11 +385,12 @@ export const createAuthModal = (
   }
 
   const setTab = (tab: AuthMode): void => {
-    if (isPending) return
+    if (isPending || tab === currentTab) return
 
     currentTab = tab
     setTabState()
     renderContent()
+    options.onModeChange?.(tab)
   }
 
   loginTab.addEventListener('click', () => setTab('login'))
@@ -389,5 +411,8 @@ export const createAuthModal = (
   document.addEventListener('keydown', handleKeydown)
   document.body.style.overflow = 'hidden'
 
-  return overlay
+  return {
+    element: overlay,
+    destroy: destroyModal,
+  }
 }
