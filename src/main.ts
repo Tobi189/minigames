@@ -2,7 +2,7 @@ import '@fontsource-variable/inter'
 import '@fontsource-variable/roboto'
 import './styles/main.scss'
 import { createApp } from './app'
-import { initializeAppSession } from '../src/auth/app-session'
+import { initializeAppSession } from './auth/app-session'
 import './config/firebase'
 
 initializeAppSession()

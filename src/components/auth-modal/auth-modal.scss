@@ -99,6 +99,16 @@
         border-color: tokens.$color-tertiary;
         outline: none;
       }
+
+      &[aria-invalid='true'] {
+        border-color: tokens.$color-error;
+      }
+    }
+
+    &__error {
+      min-height: tokens.$size-2;
+      color: tokens.$color-error;
+      font-size: tokens.$font-size-label-small;
     }
 
     &__forgot {
@@ -137,6 +147,10 @@
       cursor: pointer;
       transition: all 0.2s ease;
 
+      &:disabled {
+        cursor: not-allowed;
+      }
+
       &--primary {
         border: 1px solid tokens.$color-on-primary;
         color: tokens.$color-on-primary;
@@ -144,6 +158,12 @@
 
         &:hover {
           background-color: tokens.$color-primary-high;
+        }
+
+        &:disabled {
+          border-color: tokens.$color-outline-variant;
+          background-color: tokens.$color-outline;
+          color: tokens.$color-on-background-low;
         }
       }
 
@@ -165,8 +185,14 @@
     font-size: 12px;
     color: tokens.$color-on-background-low;
 
-    a {
+    a,
+    & > button {
+      padding: 0;
+      border: 0;
+      background: transparent;
       color: tokens.$color-on-primary;
+      font-family: inherit;
+      font-size: inherit;
       font-weight: tokens.$font-weight-bold;
       text-decoration: none;
       cursor: pointer;
