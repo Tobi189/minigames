@@ -1,7 +1,7 @@
 import './game-details-dialog.scss'
 
 import { getGameComments } from '../../api/comments'
-import { getGameDetails } from '../../api/games'
+import { getGameDetails, toggleGameFavorite } from '../../api/games'
 import type {
   ApiComment,
   ApiCommentsResponse,
@@ -9,7 +9,8 @@ import type {
   ApiGameRecord,
 } from '../../api/types'
 import { createAppUrl } from '../../app/router'
-import { AUTH_QUERY_PARAMETER } from '../../auth/auth-dialog'
+import { AUTH_QUERY_PARAMETER, openAuthDialog } from '../../auth/auth-dialog'
+import { getActiveAppSession } from '../../auth/app-session'
 import favoriteHeartIcon from '../../assets/icons/favorite-heart.svg'
 import ratingStarIcon from '../../assets/icons/rating-star.svg'
 import {
@@ -308,18 +309,19 @@ const renderGameDetails = (
 
   const metrics = document.createElement('div')
   metrics.className = 'game-details__metrics'
-  metrics.append(
-    createMetric(
-      ratingStarIcon,
-      game.rating.toString(),
-      `Rating: ${game.rating}`,
-    ),
-    createMetric(
-      favoriteHeartIcon,
-      formatCompactNumber(game.likesCount),
-      `${formatCompactNumber(game.likesCount)} likes`,
-    ),
+
+  const ratingMetric = createMetric(
+    ratingStarIcon,
+    game.rating.toString(),
+    `Rating: ${game.rating}`,
   )
+  const likesMetric = createMetric(
+    favoriteHeartIcon,
+    formatCompactNumber(game.likesCount),
+    `${formatCompactNumber(game.likesCount)} likes`,
+  )
+
+  metrics.append(ratingMetric, likesMetric)
 
   heading.append(title, metrics)
 
@@ -376,6 +378,19 @@ const renderGameDetails = (
   )
 
   let isFavorite = game.isLikedByCurrentUser
+  let likesCount = game.likesCount
+  let isFavoritePending = false
+
+  const updateLikesMetric = (): void => {
+    const formattedLikes = formatCompactNumber(likesCount)
+    const valueNode = likesMetric.lastChild
+
+    if (valueNode) {
+      valueNode.textContent = formattedLikes
+    }
+
+    likesMetric.setAttribute('aria-label', `${formattedLikes} likes`)
+  }
 
   const updateFavoriteButton = (): void => {
     favoriteButton.classList.toggle(
@@ -393,11 +408,53 @@ const renderGameDetails = (
       : 'Add to Favorites'
   }
 
+  const setFavoritePending = (pending: boolean): void => {
+    isFavoritePending = pending
+    favoriteButton.disabled = pending
+    favoriteButton.setAttribute('aria-busy', String(pending))
+
+    if (pending) {
+      favoriteIcon.textContent = '…'
+      favoriteText.textContent = 'Updating…'
+    } else {
+      updateFavoriteButton()
+    }
+  }
+
   favoriteButton.addEventListener('click', () => {
-    isFavorite = !isFavorite
-    updateFavoriteButton()
+    if (isFavoritePending) return
+
+    const session = getActiveAppSession()
+
+    if (!session) {
+      showSnackbar('Log in to manage your favorite games.', 'error')
+      openAuthDialog('login')
+      return
+    }
+
+    setFavoritePending(true)
+
+    void toggleGameFavorite(game.slug, session.email)
+      .then((response) => {
+        isFavorite = response.data.isFavorited
+        likesCount = response.data.likesCount
+        updateLikesMetric()
+        showSnackbar(
+          isFavorite
+            ? 'Game added to your favorites.'
+            : 'Game removed from your favorites.',
+          'success',
+        )
+      })
+      .catch(() => {
+        showSnackbar('Unable to update favorites. Please try again.', 'error')
+      })
+      .finally(() => {
+        setFavoritePending(false)
+      })
   })
 
+  updateLikesMetric()
   updateFavoriteButton()
   favoriteButton.append(favoriteIcon, favoriteText)
   actions.append(playButton, favoriteButton)
@@ -597,8 +654,9 @@ export const openGameDetailsDialog = (
     renderLoadingState(dialog, closeButton)
 
     try {
+      const session = getActiveAppSession()
       const [detailsResponse, commentsResponse] = await Promise.all([
-        getGameDetails(gameSlug, controller.signal),
+        getGameDetails(gameSlug, controller.signal, session?.email),
         getGameComments(gameSlug, controller.signal),
       ])
 

@@ -111,6 +111,13 @@ export interface ApiGameDetails {
 
 export type ApiGameDetailsResponse = ApiResponse<ApiGameDetails>
 
+export interface ApiFavoriteResult {
+  isFavorited: boolean
+  likesCount: number
+}
+
+export type ApiFavoriteResponse = ApiResponse<ApiFavoriteResult>
+
 export interface ApiComment {
   commentId: string
   authorName: string
