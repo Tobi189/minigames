@@ -19,6 +19,14 @@ Story 1 establishes the project foundation and implements:
 - HTML generated with DOM APIs
 - Sass
 
+## Authentication session
+
+Firebase Authentication provides the user's identity. MiniGames separately
+stores its five-minute client app session in `localStorage` under the key
+`minigames:tobi189:app-session`. The record contains only the profile fields
+needed by the interface and API requests; it does not contain credentials or
+Firebase tokens.
+
 ## Available Scripts
 
 Install dependencies:
