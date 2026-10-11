@@ -384,6 +384,11 @@
       outline: tokens.$border-width-medium solid tokens.$color-tertiary;
       outline-offset: 0;
     }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
   }
 
   &__comment-submit {
@@ -394,6 +399,11 @@
     background-color: tokens.$color-on-primary;
     color: tokens.$color-white;
     cursor: pointer;
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
   }
 
   &__comments {
@@ -435,9 +445,27 @@
     border: tokens.$border-width-thin solid tokens.$color-on-primary;
     border-radius: tokens.$corner-full;
 
-    background-color: tokens.$color-avatar-3;
-
     font-size: tokens.$font-size-label-medium;
+
+    &--1 {
+      background-color: tokens.$color-avatar-1;
+    }
+
+    &--2 {
+      background-color: tokens.$color-avatar-2;
+    }
+
+    &--3 {
+      background-color: tokens.$color-avatar-3;
+    }
+
+    &--4 {
+      background-color: tokens.$color-avatar-4;
+    }
+
+    &--5 {
+      background-color: tokens.$color-avatar-5;
+    }
   }
 
   &__comment-author {

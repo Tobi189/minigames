@@ -137,3 +137,11 @@ export type ApiCommentsResponse = ApiCollectionResponse<
   ApiComment,
   ApiCommentsMeta
 >
+
+export interface ApiCreateCommentBody {
+  userEmail: string
+  authorName: string
+  text: string
+}
+
+export type ApiCreateCommentResponse = ApiResponse<ApiComment>
