@@ -1,7 +1,8 @@
 import './game-details-dialog.scss'
 
-import { getGameComments } from '../../api/comments'
-import { getGameDetails } from '../../api/games'
+import { ApiError } from '../../api/client'
+import { createGameComment, getGameComments } from '../../api/comments'
+import { getGameDetails, toggleGameFavorite } from '../../api/games'
 import type {
   ApiComment,
   ApiCommentsResponse,
@@ -9,7 +10,8 @@ import type {
   ApiGameRecord,
 } from '../../api/types'
 import { createAppUrl } from '../../app/router'
-import { AUTH_QUERY_PARAMETER } from '../../auth/auth-dialog'
+import { AUTH_QUERY_PARAMETER, openAuthDialog } from '../../auth/auth-dialog'
+import { getActiveAppSession } from '../../auth/app-session'
 import favoriteHeartIcon from '../../assets/icons/favorite-heart.svg'
 import ratingStarIcon from '../../assets/icons/rating-star.svg'
 import {
@@ -21,6 +23,10 @@ import {
 
 const DIALOG_ANIMATION_DURATION = 200
 const TEXTAREA_MAX_HEIGHT = 88
+const COMMENT_MAX_LENGTH = 500
+const AUTHOR_NAME_MIN_LENGTH = 2
+const AUTHOR_NAME_MAX_LENGTH = 30
+const AVATAR_COLOR_COUNT = 5
 const GAME_QUERY_PARAMETER = 'game'
 const DIALOG_HISTORY_STATE = 'gameDialog'
 
@@ -136,17 +142,29 @@ const createMetric = (
   return metric
 }
 
-const createComment = (comment: ApiComment): HTMLElement => {
+const createComment = (
+  comment: ApiComment,
+  avatarColors: Map<string, number>,
+): HTMLElement => {
   const item = document.createElement('div')
   item.className = 'game-details__comment'
 
   const header = document.createElement('div')
   header.className = 'game-details__comment-header'
 
+  const authorName = comment.authorName.trim()
+  const avatarKey = authorName.toLocaleLowerCase()
+  let avatarColor = avatarColors.get(avatarKey)
+
+  if (avatarColor === undefined) {
+    avatarColor = Math.floor(Math.random() * AVATAR_COLOR_COUNT) + 1
+    avatarColors.set(avatarKey, avatarColor)
+  }
+
   const avatar = createTextElement(
     'span',
-    'game-details__comment-avatar',
-    comment.authorName.charAt(0).toUpperCase(),
+    `game-details__comment-avatar game-details__comment-avatar--${avatarColor}`,
+    authorName.charAt(0).toUpperCase(),
   )
   avatar.setAttribute('aria-hidden', 'true')
 
@@ -308,18 +326,19 @@ const renderGameDetails = (
 
   const metrics = document.createElement('div')
   metrics.className = 'game-details__metrics'
-  metrics.append(
-    createMetric(
-      ratingStarIcon,
-      game.rating.toString(),
-      `Rating: ${game.rating}`,
-    ),
-    createMetric(
-      favoriteHeartIcon,
-      formatCompactNumber(game.likesCount),
-      `${formatCompactNumber(game.likesCount)} likes`,
-    ),
+
+  const ratingMetric = createMetric(
+    ratingStarIcon,
+    game.rating.toString(),
+    `Rating: ${game.rating}`,
   )
+  const likesMetric = createMetric(
+    favoriteHeartIcon,
+    formatCompactNumber(game.likesCount),
+    `${formatCompactNumber(game.likesCount)} likes`,
+  )
+
+  metrics.append(ratingMetric, likesMetric)
 
   heading.append(title, metrics)
 
@@ -376,6 +395,19 @@ const renderGameDetails = (
   )
 
   let isFavorite = game.isLikedByCurrentUser
+  let likesCount = game.likesCount
+  let isFavoritePending = false
+
+  const updateLikesMetric = (): void => {
+    const formattedLikes = formatCompactNumber(likesCount)
+    const valueNode = likesMetric.lastChild
+
+    if (valueNode) {
+      valueNode.textContent = formattedLikes
+    }
+
+    likesMetric.setAttribute('aria-label', `${formattedLikes} likes`)
+  }
 
   const updateFavoriteButton = (): void => {
     favoriteButton.classList.toggle(
@@ -393,11 +425,53 @@ const renderGameDetails = (
       : 'Add to Favorites'
   }
 
+  const setFavoritePending = (pending: boolean): void => {
+    isFavoritePending = pending
+    favoriteButton.disabled = pending
+    favoriteButton.setAttribute('aria-busy', String(pending))
+
+    if (pending) {
+      favoriteIcon.textContent = '…'
+      favoriteText.textContent = 'Updating…'
+    } else {
+      updateFavoriteButton()
+    }
+  }
+
   favoriteButton.addEventListener('click', () => {
-    isFavorite = !isFavorite
-    updateFavoriteButton()
+    if (isFavoritePending) return
+
+    const session = getActiveAppSession()
+
+    if (!session) {
+      showSnackbar('Log in to manage your favorite games.', 'error')
+      openAuthDialog('login')
+      return
+    }
+
+    setFavoritePending(true)
+
+    void toggleGameFavorite(game.slug, session.email)
+      .then((response) => {
+        isFavorite = response.data.isFavorited
+        likesCount = response.data.likesCount
+        updateLikesMetric()
+        showSnackbar(
+          isFavorite
+            ? 'Game added to your favorites.'
+            : 'Game removed from your favorites.',
+          'success',
+        )
+      })
+      .catch(() => {
+        showSnackbar('Unable to update favorites. Please try again.', 'error')
+      })
+      .finally(() => {
+        setFavoritePending(false)
+      })
   })
 
+  updateLikesMetric()
   updateFavoriteButton()
   favoriteButton.append(favoriteIcon, favoriteText)
   actions.append(playButton, favoriteButton)
@@ -429,13 +503,16 @@ const renderGameDetails = (
   )
   commentsTitle.id = 'comments-title'
 
+  const avatarColors = new Map<string, number>()
+  const initialSession = getActiveAppSession()
+
   const commentForm = document.createElement('form')
   commentForm.className = 'game-details__comment-form'
 
   const currentUser = createTextElement(
     'span',
     'game-details__current-user',
-    'U',
+    initialSession?.displayName.trim().charAt(0).toUpperCase() || '?',
   )
   currentUser.setAttribute('aria-hidden', 'true')
 
@@ -443,10 +520,10 @@ const renderGameDetails = (
   textarea.className = 'game-details__comment-input'
   textarea.name = 'comment'
   textarea.rows = 1
-  textarea.placeholder = 'Write a comment...'
+  textarea.maxLength = COMMENT_MAX_LENGTH
   textarea.setAttribute('aria-label', 'Write a comment')
 
-  textarea.addEventListener('input', () => {
+  const resizeTextarea = (): void => {
     textarea.style.height = 'auto'
     textarea.style.height = `${Math.min(
       textarea.scrollHeight,
@@ -454,7 +531,9 @@ const renderGameDetails = (
     )}px`
     textarea.style.overflowY =
       textarea.scrollHeight > TEXTAREA_MAX_HEIGHT ? 'auto' : 'hidden'
-  })
+  }
+
+  textarea.addEventListener('input', resizeTextarea)
 
   const submitButton = document.createElement('button')
   submitButton.type = 'submit'
@@ -462,25 +541,124 @@ const renderGameDetails = (
   submitButton.setAttribute('aria-label', 'Submit comment')
   submitButton.textContent = '➤'
 
-  commentForm.addEventListener('submit', (event) => {
-    event.preventDefault()
-  })
-
-  commentForm.append(currentUser, textarea, submitButton)
-
   const commentsList = document.createElement('div')
   commentsList.className = 'game-details__comments'
 
-  if (commentsResponse.data.length === 0) {
+  const renderComments = (response: ApiCommentsResponse): void => {
+    commentsTitle.textContent = `Comments (${response.meta.totalComments})`
+    commentsList.replaceChildren()
+
+    if (response.data.length === 0) {
+      commentsList.append(
+        createApiEmptyState(
+          'No comments yet',
+          'Be the first to share your thoughts.',
+        ),
+      )
+      return
+    }
+
     commentsList.append(
-      createApiEmptyState(
-        'No comments yet',
-        'Be the first to share your thoughts.',
-      ),
+      ...response.data.map((comment) => createComment(comment, avatarColors)),
     )
-  } else {
-    commentsList.append(...commentsResponse.data.map(createComment))
   }
+
+  let isCommentPending = false
+
+  const setCommentPending = (pending: boolean): void => {
+    isCommentPending = pending
+    const isGuest = getActiveAppSession() === null
+
+    textarea.disabled = pending || isGuest
+    submitButton.disabled = pending || isGuest
+    textarea.placeholder = isGuest
+      ? 'Log in to write a comment...'
+      : 'Write a comment...'
+    submitButton.textContent = pending ? '…' : '➤'
+    commentForm.setAttribute('aria-busy', String(pending))
+  }
+
+  textarea.addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter' || event.shiftKey || event.isComposing) return
+
+    event.preventDefault()
+    commentForm.requestSubmit()
+  })
+
+  commentForm.addEventListener('submit', (event) => {
+    event.preventDefault()
+
+    if (isCommentPending) return
+
+    const session = getActiveAppSession()
+
+    if (!session) {
+      showSnackbar('Log in to write a comment.', 'error')
+      openAuthDialog('login')
+      return
+    }
+
+    const authorName = session.displayName.trim()
+    const text = textarea.value.trim()
+
+    if (
+      authorName.length < AUTHOR_NAME_MIN_LENGTH ||
+      authorName.length > AUTHOR_NAME_MAX_LENGTH
+    ) {
+      showSnackbar('Your display name must be 2–30 characters.', 'error')
+      return
+    }
+
+    if (text.length === 0 || text.length > COMMENT_MAX_LENGTH) {
+      showSnackbar('Comment must be 1–500 characters.', 'error')
+      return
+    }
+
+    setCommentPending(true)
+    let commentCreated = false
+
+    void createGameComment(game.slug, {
+      userEmail: session.email,
+      authorName,
+      text,
+    })
+      .then(() => {
+        commentCreated = true
+        textarea.value = ''
+        resizeTextarea()
+
+        return getGameComments(game.slug, undefined, session.email)
+      })
+      .then((response) => {
+        renderComments(response)
+        showSnackbar('Comment posted successfully.', 'success')
+      })
+      .catch((error: unknown) => {
+        if (commentCreated) {
+          showSnackbar(
+            'Comment was posted, but comments could not be refreshed.',
+            'error',
+          )
+        } else if (error instanceof ApiError) {
+          showSnackbar(
+            'Unable to post comment. Please check it and try again.',
+            'error',
+          )
+        } else {
+          showSnackbar(
+            'Comment submission result is unknown. Refresh comments before trying again.',
+            'error',
+          )
+        }
+      })
+      .finally(() => {
+        setCommentPending(false)
+      })
+  })
+
+  commentForm.append(currentUser, textarea, submitButton)
+  renderComments(commentsResponse)
+  setCommentPending(false)
 
   comments.append(commentsTitle, commentForm, commentsList)
   body.append(heading, description, specs, actions, records, comments)
@@ -597,9 +775,10 @@ export const openGameDetailsDialog = (
     renderLoadingState(dialog, closeButton)
 
     try {
+      const session = getActiveAppSession()
       const [detailsResponse, commentsResponse] = await Promise.all([
-        getGameDetails(gameSlug, controller.signal),
-        getGameComments(gameSlug, controller.signal),
+        getGameDetails(gameSlug, controller.signal, session?.email),
+        getGameComments(gameSlug, controller.signal, session?.email),
       ])
 
       if (controller.signal.aborted || !overlay.isConnected) return

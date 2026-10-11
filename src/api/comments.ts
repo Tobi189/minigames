@@ -1,9 +1,14 @@
-import type { ApiCommentsResponse } from './types'
-import { apiRequest } from './client'
+import type {
+  ApiCommentsResponse,
+  ApiCreateCommentBody,
+  ApiCreateCommentResponse,
+} from './types'
+import { apiPost, apiRequest } from './client'
 
 export const getGameComments = (
   gameSlug: string,
   signal?: AbortSignal,
+  userEmail?: string,
 ): Promise<ApiCommentsResponse> => {
   const encodedSlug = encodeURIComponent(gameSlug)
   const searchParams = new URLSearchParams({
@@ -11,9 +16,27 @@ export const getGameComments = (
     sort: 'newest',
   })
 
+  if (userEmail) {
+    searchParams.set('userEmail', userEmail)
+  }
+
   const path = `/games/${encodedSlug}/comments`
 
   const endpoint = `${path}?${searchParams.toString()}`
   const response = apiRequest<ApiCommentsResponse>(endpoint, signal)
   return response
+}
+
+export const createGameComment = (
+  gameSlug: string,
+  body: ApiCreateCommentBody,
+  signal?: AbortSignal,
+): Promise<ApiCreateCommentResponse> => {
+  const endpoint = `/games/${encodeURIComponent(gameSlug)}/comments`
+
+  return apiPost<ApiCreateCommentResponse, ApiCreateCommentBody>(
+    endpoint,
+    body,
+    signal,
+  )
 }

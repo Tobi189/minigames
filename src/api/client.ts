@@ -39,3 +39,25 @@ export const apiRequest = async <T>(
 
   return (await response.json()) as T
 }
+
+export const apiPost = async <TResponse, TBody>(
+  endpoint: string,
+  body: TBody,
+  signal?: AbortSignal,
+): Promise<TResponse> => {
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+    signal,
+  })
+
+  if (!response.ok) {
+    const message = await getErrorMessage(response)
+    throw new ApiError(message, response.status)
+  }
+
+  return (await response.json()) as TResponse
+}
