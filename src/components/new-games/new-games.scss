@@ -47,6 +47,23 @@
     gap: tokens.$size-2;
   }
 
+  &__content {
+    min-height: clamp(
+      tokens.$carousel-height-mobile,
+      35vw,
+      tokens.$carousel-height-desktop
+    );
+  }
+
+  &__skeleton {
+    width: 100%;
+    height: clamp(
+      tokens.$carousel-height-mobile,
+      35vw,
+      tokens.$carousel-height-desktop
+    );
+  }
+
   &__track {
     position: relative;
 
@@ -77,6 +94,11 @@
   background-color: tokens.$color-white;
   color: tokens.$color-on-primary;
   cursor: pointer;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 
   &--next {
     background-color: tokens.$color-primary;
