@@ -1,0 +1,149 @@
+@use '../../../styles/tokens' as tokens;
+@use '../../../styles/mixins';
+
+.hero {
+  max-width: tokens.$layout-max-width;
+  margin-inline: auto;
+  padding: tokens.$size-14 tokens.$size-15;
+
+  background-color: tokens.$color-background-footer;
+  background-image: url('../../../assets/hero-background.png');
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.hero__card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: tokens.$size-3;
+
+  width: 100%;
+  max-width: tokens.$hero-card-width;
+  padding: tokens.$size-6;
+
+  border: tokens.$border-width-medium solid tokens.$color-on-primary;
+  border-radius: tokens.$corner-extra-large;
+
+  background-color: tokens.$color-background;
+  box-shadow: tokens.$shadow-level-3;
+}
+
+.hero__title {
+  margin: 0;
+
+  color: tokens.$color-on-primary;
+  font-size: tokens.$font-size-display-large;
+  font-weight: tokens.$font-weight-bold;
+  line-height: tokens.$line-height-heading;
+}
+
+.hero__description {
+  margin: 0;
+
+  color: tokens.$color-on-background;
+  font-size: tokens.$font-size-body-large;
+  line-height: tokens.$line-height-body;
+}
+
+.hero__link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  max-width: 100%;
+  padding: tokens.$button-large-padding-block
+    tokens.$button-large-padding-inline;
+
+  border: tokens.$border-width-thin solid tokens.$color-on-primary;
+  border-radius: tokens.$corner-small;
+
+  background-color: tokens.$color-primary;
+  color: tokens.$color-on-primary;
+
+  font-size: tokens.$font-size-label-large;
+  font-weight: tokens.$font-weight-bold;
+  line-height: tokens.$line-height-body;
+  text-decoration: none;
+
+  &:hover {
+    background-color: tokens.$color-primary-high;
+  }
+
+  &:active {
+    background-color: tokens.$color-primary-low;
+  }
+}
+
+// Initial responsive settings, pending comparison with the tablet mockup.
+@include mixins.tablet-and-down {
+  .hero {
+    padding: tokens.$size-8 tokens.$size-5;
+  }
+
+  .hero__card {
+    padding: tokens.$size-4;
+  }
+
+  .hero__title {
+    font-size: tokens.$font-size-display-medium;
+  }
+
+  .hero__description {
+    font-size: tokens.$font-size-body-medium;
+  }
+}
+
+// Initial responsive settings, pending comparison with the phone mockup.
+@media (max-width: tokens.$breakpoint-phone) {
+  .hero {
+    padding: tokens.$size-8 tokens.$size-2;
+  }
+
+  .hero__card {
+    padding: tokens.$size-3;
+  }
+
+  .hero__title {
+    font-size: tokens.$font-size-display-small;
+  }
+
+  .hero__description {
+    margin: 0;
+
+    color: tokens.$color-on-background;
+    font-size: tokens.$font-size-body-large;
+    font-weight: tokens.$font-weight-medium;
+    line-height: tokens.$line-height-body;
+  }
+
+  .hero__link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    max-width: 100%;
+    padding: tokens.$button-large-padding-block
+      tokens.$button-large-padding-inline;
+
+    border: tokens.$border-width-thin solid tokens.$color-on-primary;
+    border-radius: tokens.$corner-small;
+
+    background-color: tokens.$color-primary;
+    color: tokens.$color-on-primary;
+
+    font-size: tokens.$font-size-body-large;
+    font-weight: tokens.$font-weight-bold;
+    line-height: normal;
+    text-decoration: none;
+
+    &:hover {
+      background-color: tokens.$color-primary-high;
+    }
+
+    &:active {
+      background-color: tokens.$color-primary-low;
+    }
+  }
+}

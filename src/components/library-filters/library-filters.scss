@@ -1,0 +1,169 @@
+@use '../../styles/tokens';
+@use '../../styles/mixins';
+
+.library-filters {
+  display: flex;
+  align-items: center;
+
+  width: 100%;
+  min-height: tokens.$library-filters-height-desktop;
+  padding-inline: tokens.$size-15;
+
+  &__categories {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: tokens.$size-2;
+
+    height: tokens.$library-chip-height;
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  &__chip {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+
+    height: tokens.$library-chip-height;
+    min-height: 0;
+    max-height: tokens.$library-chip-height;
+    padding: 0 tokens.$size-2;
+
+    appearance: none;
+    border: tokens.$border-width-thin solid tokens.$color-on-primary;
+    border-radius: tokens.$corner-full;
+
+    background-color: transparent;
+    color: tokens.$color-on-primary;
+
+    font-size: tokens.$font-size-label-large;
+    font-weight: tokens.$font-weight-bold;
+    line-height: 1;
+    cursor: pointer;
+
+    transition:
+      background-color 150ms ease,
+      border-color 150ms ease;
+
+    &:hover {
+      background-color: tokens.$color-surface;
+    }
+
+    &:focus-visible {
+      outline: tokens.$border-width-medium solid tokens.$color-tertiary;
+      outline-offset: tokens.$border-width-medium;
+    }
+
+    &--active {
+      background-color: tokens.$color-primary;
+
+      &:hover {
+        background-color: tokens.$color-primary-low;
+      }
+    }
+  }
+
+  &__sort {
+    position: relative;
+    flex: 0 0 tokens.$library-sort-width;
+
+    width: tokens.$library-sort-width;
+    height: tokens.$library-sort-height-desktop;
+    margin-left: auto;
+  }
+
+  &__sort-select {
+    width: 100%;
+    height: 100%;
+    padding: 0 tokens.$size-5 0 tokens.$size-2;
+
+    appearance: none;
+    border: tokens.$border-width-thin solid tokens.$color-on-primary;
+    border-radius: tokens.$corner-full;
+
+    background-color: transparent;
+    color: tokens.$color-on-primary;
+
+    font-size: tokens.$font-size-label-large;
+    font-weight: tokens.$font-weight-bold;
+    cursor: pointer;
+
+    &:hover {
+      background-color: tokens.$color-surface;
+    }
+
+    &:focus-visible {
+      outline: tokens.$border-width-medium solid tokens.$color-tertiary;
+      outline-offset: tokens.$border-width-medium;
+    }
+  }
+
+  &__sort-arrow {
+    position: absolute;
+    top: 50%;
+    right: tokens.$size-2;
+
+    pointer-events: none;
+    transform: translateY(-50%);
+  }
+
+  @include mixins.tablet-and-down {
+    flex-direction: column;
+    align-items: stretch;
+    gap: tokens.$size-2;
+
+    min-height: tokens.$library-filters-height-tablet;
+    padding: tokens.$size-2 tokens.$size-5;
+
+    &__categories {
+      flex: 0 0 tokens.$library-chip-height;
+      gap: tokens.$size-1;
+
+      width: 100%;
+      height: tokens.$library-chip-height;
+    }
+
+    &__sort {
+      flex: 0 0 tokens.$library-sort-height-compact;
+
+      width: tokens.$library-sort-width;
+      height: tokens.$library-sort-height-compact;
+      margin-left: 0;
+    }
+  }
+
+  @media (max-width: tokens.$breakpoint-phone) {
+    min-height: tokens.$library-filters-height-mobile;
+    padding-inline: tokens.$size-2;
+
+    &__categories {
+      flex-basis: tokens.$library-chip-height-mobile;
+      height: tokens.$library-chip-height-mobile;
+    }
+
+    &__chip {
+      height: tokens.$library-chip-height-mobile;
+      max-height: tokens.$library-chip-height-mobile;
+
+      font-size: tokens.$font-size-label-compact;
+    }
+
+    &__sort {
+      width: 100%;
+    }
+
+    &__sort-select {
+      font-size: tokens.$font-size-label-medium;
+    }
+  }
+}

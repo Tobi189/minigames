@@ -1,0 +1,150 @@
+@use '../../styles/tokens';
+@use '../../styles/mixins';
+
+.developer-cta {
+  display: flex;
+  align-items: center;
+  gap: tokens.$size-5;
+  width: 100%;
+  max-width: tokens.$layout-max-width;
+  margin-inline: auto;
+  padding: tokens.$size-5 clamp(tokens.$size-2, 6.25vw, tokens.$size-15);
+  background-color: tokens.$color-background;
+
+  &__image {
+    flex: 0 1 tokens.$developer-cta-illustration-width;
+    min-width: 0;
+    border-radius: tokens.$corner-extra-large;
+  }
+
+  &__card {
+    display: flex;
+    flex: 1 1 tokens.$developer-cta-card-width;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: tokens.$size-3;
+    min-width: 0;
+    padding: tokens.$size-5;
+    border: tokens.$border-width-medium solid tokens.$color-on-primary;
+    border-radius: tokens.$corner-extra-large;
+    background-color: tokens.$color-white;
+    box-shadow: tokens.$shadow-soft;
+  }
+
+  &__title {
+    margin: 0;
+    color: tokens.$color-on-primary;
+    font-size: tokens.$font-size-headline-large;
+    font-weight: tokens.$font-weight-bold;
+    line-height: tokens.$line-height-heading;
+  }
+
+  &__text {
+    max-width: tokens.$developer-cta-text-max-width;
+    margin: 0;
+    color: tokens.$color-on-background;
+    font-size: tokens.$font-size-body-large;
+    font-weight: tokens.$font-weight-regular;
+    line-height: tokens.$line-height-body;
+  }
+
+  &__button {
+    display: inline-flex;
+    align-items: center;
+    gap: tokens.$size-1;
+    padding: tokens.$button-large-padding-block
+      tokens.$button-large-padding-inline;
+    border: tokens.$border-width-medium solid tokens.$color-on-primary;
+    border-radius: tokens.$corner-medium;
+    color: tokens.$color-on-primary;
+    background-color: tokens.$color-primary;
+    box-shadow: tokens.$shadow-soft;
+    font-size: tokens.$font-size-label-extra-large;
+    font-weight: tokens.$font-weight-bold;
+    line-height: tokens.$line-height-body;
+    cursor: pointer;
+
+    &:hover {
+      background-color: tokens.$color-primary-high;
+    }
+
+    &:active {
+      box-shadow: none;
+    }
+
+    &:focus-visible {
+      outline: tokens.$border-width-medium solid tokens.$color-tertiary;
+      outline-offset: tokens.$size-05;
+    }
+
+    &:disabled {
+      border-color: tokens.$color-outline-variant;
+      color: tokens.$color-on-background-low;
+      background-color: tokens.$color-outline;
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+  }
+
+  &__button-icon {
+    display: flex;
+    flex: none;
+    width: tokens.$developer-cta-icon-size;
+    height: tokens.$developer-cta-icon-size;
+
+    svg {
+      width: 100%;
+      height: 100%;
+    }
+  }
+
+  &__contact {
+    margin: 0;
+    color: tokens.$color-on-background-low;
+    font-size: tokens.$font-size-body-small;
+    font-weight: tokens.$font-weight-regular;
+    line-height: tokens.$line-height-body;
+  }
+
+  &__email {
+    color: inherit;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+
+    &:focus-visible {
+      outline: tokens.$border-width-medium solid tokens.$color-tertiary;
+      outline-offset: tokens.$size-05;
+    }
+  }
+}
+
+@include mixins.tablet-and-down {
+  .developer-cta {
+    flex-direction: column;
+    align-items: stretch;
+    gap: tokens.$size-3;
+    padding-block: tokens.$size-4;
+
+    &__image {
+      flex: none;
+      width: 100%;
+    }
+
+    &__card {
+      flex: none;
+      gap: tokens.$size-2;
+      padding: tokens.$size-3;
+    }
+
+    &__title {
+      font-size: tokens.$font-size-headline-medium;
+    }
+
+    &__text {
+      font-size: tokens.$font-size-body-medium;
+    }
+  }
+}

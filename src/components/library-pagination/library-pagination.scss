@@ -1,0 +1,87 @@
+@use '../../styles/tokens';
+@use '../../styles/mixins';
+
+.library-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  height: tokens.$library-pagination-height-desktop;
+
+  &__controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: tokens.$library-pagination-gap-desktop;
+  }
+
+  &__button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: tokens.$library-pagination-control-size;
+    height: tokens.$library-pagination-control-size;
+    padding: 0;
+
+    border: tokens.$border-width-thin solid tokens.$color-on-primary;
+    border-radius: tokens.$corner-full;
+
+    background-color: tokens.$color-surface-low;
+    color: tokens.$color-on-primary;
+
+    font-size: tokens.$font-size-label-large;
+    font-weight: tokens.$font-weight-bold;
+    line-height: 1;
+    cursor: pointer;
+
+    transition:
+      background-color 150ms ease,
+      color 150ms ease,
+      opacity 150ms ease;
+
+    &:hover:not(:disabled) {
+      background-color: tokens.$color-secondary;
+    }
+
+    &:focus-visible {
+      outline: tokens.$border-width-medium solid tokens.$color-tertiary;
+      outline-offset: tokens.$border-width-medium;
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    &[hidden] {
+      display: none;
+    }
+  }
+
+  &__page--active {
+    border-color: tokens.$color-tertiary;
+
+    background-color: tokens.$color-tertiary;
+    color: tokens.$color-white;
+
+    &:hover:not(:disabled) {
+      background-color: tokens.$color-tertiary;
+    }
+  }
+}
+
+@include mixins.tablet-and-down {
+  .library-pagination {
+    &__controls {
+      gap: tokens.$library-pagination-gap-compact;
+    }
+  }
+}
+
+@media (max-width: tokens.$breakpoint-phone) {
+  .library-pagination {
+    height: tokens.$library-pagination-height-mobile;
+  }
+}

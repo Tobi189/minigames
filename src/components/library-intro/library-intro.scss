@@ -1,0 +1,57 @@
+@use '../../styles/tokens';
+@use '../../styles/mixins';
+
+.library-intro {
+  width: 100%;
+  min-height: tokens.$library-intro-height-desktop;
+  padding: tokens.$size-5 tokens.$size-15;
+
+  &__title,
+  &__subtitle {
+    margin: 0;
+  }
+
+  &__title {
+    color: tokens.$color-on-primary;
+
+    font-size: tokens.$font-size-display-large;
+    font-weight: tokens.$font-weight-bold;
+    line-height: normal;
+  }
+
+  &__subtitle {
+    margin-top: tokens.$size-1;
+
+    color: tokens.$color-on-background;
+
+    font-size: tokens.$font-size-body-large;
+    font-weight: tokens.$font-weight-medium;
+    line-height: normal;
+  }
+
+  @include mixins.tablet-and-down {
+    min-height: tokens.$library-intro-height-tablet;
+    padding: tokens.$library-intro-padding-tablet tokens.$size-5;
+
+    &__title {
+      font-size: tokens.$font-size-display-medium;
+    }
+
+    &__subtitle {
+      font-size: tokens.$font-size-body-small;
+    }
+  }
+
+  @media (max-width: tokens.$breakpoint-phone) {
+    min-height: tokens.$library-intro-height-mobile;
+    padding: tokens.$size-2;
+
+    &__title {
+      font-size: tokens.$font-size-display-small;
+    }
+
+    &__subtitle {
+      margin-top: tokens.$size-05;
+    }
+  }
+}
