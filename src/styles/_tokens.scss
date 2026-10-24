@@ -142,3 +142,70 @@ $developer-cta-text-max-width: 600px;
 $developer-cta-icon-size: 20px;
 
 $shadow-soft: 0 4px 24px rgba($color-black, 0.12);
+
+// Library introduction
+$library-intro-height-desktop: 178px;
+$library-intro-height-tablet: 119px;
+$library-intro-height-mobile: 86px;
+$library-intro-padding-tablet: 20px;
+
+// Library filters
+$library-filters-height-desktop: 76px;
+$library-filters-height-tablet: 121px;
+$library-filters-height-mobile: 119px;
+$library-chip-height: 33px;
+$library-chip-height-mobile: 31px;
+
+$font-size-label-large: 14px;
+$font-size-label-medium: 12px;
+$font-size-label-compact: 11px;
+$font-size-label-small: 10px;
+
+$library-sort-width: 190px;
+$library-sort-height-desktop: 44px;
+$library-sort-height-compact: 40px;
+
+// Library game cards
+$library-card-height-desktop: 200px;
+$library-card-image-width-desktop: 320px;
+
+$library-card-height-tablet: 152px;
+$library-card-image-width-tablet: 270px;
+
+$library-card-height-mobile: 392px;
+$library-card-image-height-mobile: 160px;
+
+$library-details-button-width: 88px;
+$library-details-button-height-desktop: 37px;
+$library-details-button-height-tablet: 33px;
+
+$breakpoint-library-single-column: 1280px;
+
+// Library pagination
+$library-pagination-height-desktop: 120px;
+$library-pagination-height-mobile: 88px;
+$library-pagination-control-size: 40px;
+$library-pagination-gap-desktop: 16px;
+$library-pagination-gap-compact: 8px;
+
+// Game details dialog
+$game-details-width: 600px;
+$game-details-width-mobile: 375px;
+$game-details-hero-height: 220px;
+$game-details-spec-height: 56px;
+$game-details-action-height: 48px;
+$game-details-close-size: 32px;
+$game-details-user-size: 40px;
+$game-details-comment-avatar-size: 28px;
+$game-details-comment-min-height: 128px;
+$game-details-textarea-max-height: 88px;
+$game-details-layer: 1100;
+$duration-dialog: 200ms;
+
+// Home carousel
+$carousel-height-desktop: 392px;
+$carousel-height-tablet: 270px;
+$carousel-height-mobile: 168px;
+$carousel-info-compact-max-width: 283px;
+$breakpoint-carousel-compact: 900px;
+$duration-carousel: 350ms;

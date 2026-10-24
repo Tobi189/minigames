@@ -1,0 +1,138 @@
+@use '../../styles/tokens';
+
+.api-feedback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: tokens.$size-1;
+
+  min-height: tokens.$size-15;
+  padding: tokens.$size-3;
+
+  border: tokens.$border-width-medium solid tokens.$color-on-primary;
+  border-radius: tokens.$corner-medium;
+
+  background-color: tokens.$color-white;
+  color: tokens.$color-on-primary;
+  text-align: center;
+
+  &--error {
+    border-color: tokens.$color-error;
+  }
+
+  &__title,
+  &__message {
+    margin: 0;
+  }
+
+  &__title {
+    font-size: tokens.$font-size-headline-small;
+  }
+
+  &__message {
+    color: tokens.$color-on-background;
+  }
+
+  &__retry {
+    margin-top: tokens.$size-1;
+    padding: tokens.$button-small-padding-block
+      tokens.$button-small-padding-inline;
+
+    border: tokens.$border-width-medium solid tokens.$color-on-primary;
+    border-radius: tokens.$corner-small;
+
+    background-color: tokens.$color-primary;
+    color: tokens.$color-on-primary;
+    font: inherit;
+    font-weight: tokens.$font-weight-bold;
+    cursor: pointer;
+  }
+}
+
+.api-skeleton {
+  position: relative;
+  overflow: hidden;
+
+  border-radius: tokens.$corner-medium;
+
+  background-color: tokens.$color-outline;
+
+  &::after {
+    position: absolute;
+    inset: 0;
+
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(tokens.$color-white, 0.75),
+      transparent
+    );
+    content: '';
+    transform: translateX(-100%);
+    animation: api-shimmer 1.25s infinite;
+  }
+}
+
+.snackbar-region {
+  position: fixed;
+  z-index: 1200;
+  right: tokens.$size-2;
+  bottom: tokens.$size-2;
+
+  display: flex;
+  flex-direction: column;
+  gap: tokens.$size-1;
+
+  width: min(360px, calc(100vw - #{tokens.$size-4}));
+  pointer-events: none;
+}
+
+.snackbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: tokens.$size-2;
+
+  padding: tokens.$size-2;
+
+  border: tokens.$border-width-medium solid tokens.$color-on-primary;
+  border-radius: tokens.$corner-small;
+
+  background-color: tokens.$color-on-primary;
+  box-shadow: tokens.$shadow-level-1;
+  color: tokens.$color-white;
+  pointer-events: auto;
+
+  &--success {
+    border-color: tokens.$color-price-free;
+  }
+
+  &--error {
+    border-color: tokens.$color-error;
+  }
+
+  &__close {
+    flex: 0 0 auto;
+    padding: 0;
+
+    border: 0;
+
+    background: transparent;
+    color: inherit;
+    font-size: tokens.$font-size-headline-small;
+    cursor: pointer;
+  }
+}
+
+@keyframes api-shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .api-skeleton::after {
+    animation: none;
+  }
+}
