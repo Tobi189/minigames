@@ -1,12 +1,15 @@
 import './new-games.scss'
 
-import islandersImage from '../../assets/games/islanders-new-shores-card.jpg'
-import tailsideImage from '../../assets/games/tailside-cozy-cafe-sim-card.jpg'
-import tinyGladeImage from '../../assets/games/tiny-glade-card.jpg'
-import { libraryGames } from '../../data/library-games'
+import { getFeaturedGames } from '../../api/games'
+import type { ApiGame } from '../../api/types'
+import { createAppUrl } from '../../app/router'
+import {
+  createApiEmptyState,
+  createApiErrorBanner,
+  createApiSkeleton,
+  showSnackbar,
+} from '../api-feedback/api-feedback'
 import { openGameDetailsDialog } from '../game-details-dialog/game-details-dialog'
-
-import type { LibraryGame } from '../../types/library-game'
 
 const AUTOPLAY_INTERVAL = 4000
 const SWIPE_THRESHOLD = 50
@@ -20,45 +23,9 @@ type CardPosition =
   | 'peek-right'
   | 'hidden-right'
 
-const additionalFeaturedGames: LibraryGame[] = [
-  {
-    slug: 'tiny-glade',
-    name: 'Tiny Glade',
-    category: 'arcade',
-    price: '$3.99',
-    shortDescription:
-      'A small diorama builder where you doodle whimsical castles, cozy cottages and romantic ruins.',
-    rating: 4.9,
-    likesCount: 67300,
-    cardImage: tinyGladeImage,
-  },
-  {
-    slug: 'tailside-cozy-cafe-sim',
-    name: 'Tailside: Cozy Cafe Sim',
-    category: 'strategy',
-    price: 'Free',
-    shortDescription:
-      'Run your own cozy café, brew coffee, decorate and meet charming villagers.',
-    rating: 4.8,
-    likesCount: 35600,
-    cardImage: tailsideImage,
-  },
-  {
-    slug: 'islanders-new-shores',
-    name: 'ISLANDERS: New Shores',
-    category: 'strategy',
-    price: '$3.99',
-    shortDescription:
-      'Build peaceful island settlements in this relaxing minimalist strategy game.',
-    rating: 4.9,
-    likesCount: 54200,
-    cardImage: islandersImage,
-  },
-]
-
-const featuredGames = [...libraryGames, ...additionalFeaturedGames]
-
 const formatLikes = (likes: number): string => {
+  if (likes < 1000) return likes.toString()
+
   const compactLikes = Math.floor(likes / 100) / 10
   return `${compactLikes}K`
 }
@@ -80,11 +47,10 @@ const createArrowButton = (
   arrow.textContent = direction === 'previous' ? '←' : '→'
 
   button.append(arrow)
-
   return button
 }
 
-const createGameCard = (game: LibraryGame): HTMLButtonElement => {
+const createGameCard = (game: ApiGame): HTMLButtonElement => {
   const card = document.createElement('button')
   card.type = 'button'
   card.className = 'game-card'
@@ -92,8 +58,8 @@ const createGameCard = (game: LibraryGame): HTMLButtonElement => {
 
   const image = document.createElement('img')
   image.className = 'game-card__image'
-  image.src = game.cardImage
-  image.alt = ''
+  image.src = createAppUrl(game.cardImage)
+  image.alt = game.name
   image.draggable = false
 
   const content = document.createElement('span')
@@ -123,12 +89,16 @@ const createGameCard = (game: LibraryGame): HTMLButtonElement => {
   return card
 }
 
-const getCircularOffset = (cardIndex: number, activeIndex: number): number => {
+const getCircularOffset = (
+  cardIndex: number,
+  activeIndex: number,
+  gamesCount: number,
+): number => {
   let offset = cardIndex - activeIndex
-  const halfLength = Math.floor(featuredGames.length / 2)
+  const halfLength = Math.floor(gamesCount / 2)
 
-  if (offset > halfLength) offset -= featuredGames.length
-  if (offset < -halfLength) offset += featuredGames.length
+  if (offset > halfLength) offset -= gamesCount
+  if (offset < -halfLength) offset += gamesCount
 
   return offset
 }
@@ -159,142 +129,191 @@ export const createNewGames = (): HTMLElement => {
 
   const previousButton = createArrowButton('previous')
   const nextButton = createArrowButton('next')
+  previousButton.disabled = true
+  nextButton.disabled = true
 
   const controls = document.createElement('div')
   controls.className = 'new-games__controls'
   controls.append(previousButton, nextButton)
 
-  const track = document.createElement('div')
-  track.className = 'new-games__track'
-  track.setAttribute('aria-label', 'Featured games carousel')
+  const content = document.createElement('div')
+  content.className = 'new-games__content'
 
-  const cards = featuredGames.map((game) => createGameCard(game))
+  header.append(title, controls)
+  section.append(header, content)
 
-  let activeIndex = 0
-  let autoplayTimer: number | undefined
-  let timerStartedAt = 0
-  let remainingTime = AUTOPLAY_INTERVAL
-  let pointerStartX = 0
-  let isPointerActive = false
-  let suppressClick = false
+  let stopCarousel: (() => void) | null = null
 
-  const updateCards = (): void => {
-    cards.forEach((card, index) => {
-      const offset = getCircularOffset(index, activeIndex)
-      const position = getCardPosition(offset)
+  const renderCarousel = (games: ApiGame[]): void => {
+    const track = document.createElement('div')
+    track.className = 'new-games__track'
+    track.setAttribute('aria-label', 'Featured games carousel')
 
-      card.className = `game-card game-card--${position}`
-      card.tabIndex = Math.abs(offset) <= 2 ? 0 : -1
-      card.setAttribute('aria-hidden', String(Math.abs(offset) > 2))
-    })
-  }
+    const cards = games.map(createGameCard)
+    let activeIndex = 0
+    let autoplayTimer: number | undefined
+    let timerStartedAt = 0
+    let remainingTime = AUTOPLAY_INTERVAL
+    let pointerStartX = 0
+    let isPointerActive = false
+    let suppressClick = false
 
-  const stopTimer = (): void => {
-    if (autoplayTimer !== undefined) {
-      window.clearTimeout(autoplayTimer)
-      autoplayTimer = undefined
+    const updateCards = (): void => {
+      cards.forEach((card, index) => {
+        const offset = getCircularOffset(index, activeIndex, cards.length)
+        const position = getCardPosition(offset)
+
+        card.className = `game-card game-card--${position}`
+        card.tabIndex = Math.abs(offset) <= 2 ? 0 : -1
+        card.setAttribute('aria-hidden', String(Math.abs(offset) > 2))
+      })
     }
-  }
 
-  const showNext = (): void => {
-    activeIndex = (activeIndex + 1) % featuredGames.length
+    const stopTimer = (): void => {
+      if (autoplayTimer !== undefined) {
+        window.clearTimeout(autoplayTimer)
+        autoplayTimer = undefined
+      }
+    }
+
+    const showNext = (): void => {
+      activeIndex = (activeIndex + 1) % cards.length
+      updateCards()
+    }
+
+    const showPrevious = (): void => {
+      activeIndex = (activeIndex - 1 + cards.length) % cards.length
+      updateCards()
+    }
+
+    const startTimer = (duration = AUTOPLAY_INTERVAL): void => {
+      stopTimer()
+
+      if (cards.length < 2) return
+
+      remainingTime = duration
+      timerStartedAt = performance.now()
+
+      autoplayTimer = window.setTimeout(() => {
+        if (!section.isConnected) {
+          stopTimer()
+          return
+        }
+
+        showNext()
+        startTimer()
+      }, duration)
+    }
+
+    const pauseTimer = (): void => {
+      if (autoplayTimer === undefined) return
+
+      const elapsedTime = performance.now() - timerStartedAt
+      remainingTime = Math.max(0, remainingTime - elapsedTime)
+      stopTimer()
+    }
+
+    previousButton.addEventListener('click', () => {
+      showPrevious()
+      startTimer()
+    })
+
+    nextButton.addEventListener('click', () => {
+      showNext()
+      startTimer()
+    })
+
+    cards.forEach((card, index) => {
+      card.addEventListener('click', () => {
+        if (suppressClick) return
+        openGameDetailsDialog(games[index].slug)
+      })
+    })
+
+    track.addEventListener('pointerdown', (event) => {
+      isPointerActive = true
+      pointerStartX = event.clientX
+      suppressClick = false
+      track.setPointerCapture(event.pointerId)
+      pauseTimer()
+    })
+
+    track.addEventListener('pointerup', (event) => {
+      if (!isPointerActive) return
+
+      isPointerActive = false
+      const distance = event.clientX - pointerStartX
+
+      if (Math.abs(distance) >= SWIPE_THRESHOLD) {
+        suppressClick = true
+
+        if (distance < 0) showNext()
+        else showPrevious()
+
+        startTimer()
+        window.setTimeout(() => {
+          suppressClick = false
+        })
+      } else {
+        startTimer(remainingTime)
+      }
+    })
+
+    track.addEventListener('pointercancel', () => {
+      isPointerActive = false
+      startTimer(remainingTime)
+    })
+
+    track.append(...cards)
+    content.replaceChildren(track)
+    previousButton.disabled = cards.length < 2
+    nextButton.disabled = cards.length < 2
+
     updateCards()
+    startTimer()
+    stopCarousel = stopTimer
   }
 
-  const showPrevious = (): void => {
-    activeIndex =
-      (activeIndex - 1 + featuredGames.length) % featuredGames.length
-    updateCards()
-  }
+  const loadFeaturedGames = async (isRetry = false): Promise<void> => {
+    stopCarousel?.()
+    previousButton.disabled = true
+    nextButton.disabled = true
+    content.replaceChildren(
+      createApiSkeleton('new-games__skeleton', 'Loading featured games'),
+    )
 
-  const startTimer = (duration = AUTOPLAY_INTERVAL): void => {
-    stopTimer()
-    remainingTime = duration
-    timerStartedAt = performance.now()
+    try {
+      const response = await getFeaturedGames()
 
-    autoplayTimer = window.setTimeout(() => {
-      if (!section.isConnected) {
-        stopTimer()
+      if (!section.isConnected) return
+
+      if (response.data.length === 0) {
+        content.replaceChildren(
+          createApiEmptyState(
+            'No featured games yet',
+            'Please check back again soon.',
+          ),
+        )
         return
       }
 
-      showNext()
-      startTimer()
-    }, duration)
-  }
+      renderCarousel(response.data)
 
-  const pauseTimer = (): void => {
-    if (autoplayTimer === undefined) return
-
-    const elapsedTime = performance.now() - timerStartedAt
-    remainingTime = Math.max(0, remainingTime - elapsedTime)
-    stopTimer()
-  }
-
-  const resetTimer = (): void => {
-    startTimer(AUTOPLAY_INTERVAL)
-  }
-
-  previousButton.addEventListener('click', () => {
-    showPrevious()
-    resetTimer()
-  })
-
-  nextButton.addEventListener('click', () => {
-    showNext()
-    resetTimer()
-  })
-
-  cards.forEach((card) => {
-    card.addEventListener('click', () => {
-      if (suppressClick) return
-      openGameDetailsDialog()
-    })
-  })
-
-  track.addEventListener('pointerdown', (event) => {
-    isPointerActive = true
-    pointerStartX = event.clientX
-    suppressClick = false
-    track.setPointerCapture(event.pointerId)
-    pauseTimer()
-  })
-
-  track.addEventListener('pointerup', (event) => {
-    if (!isPointerActive) return
-
-    isPointerActive = false
-    const distance = event.clientX - pointerStartX
-
-    if (Math.abs(distance) >= SWIPE_THRESHOLD) {
-      suppressClick = true
-
-      if (distance < 0) {
-        showNext()
-      } else {
-        showPrevious()
+      if (isRetry) {
+        showSnackbar('Featured games loaded successfully.', 'success')
       }
+    } catch {
+      if (!section.isConnected) return
 
-      resetTimer()
-      window.setTimeout(() => {
-        suppressClick = false
-      })
-    } else {
-      startTimer(remainingTime)
+      showSnackbar('Unable to load featured games.', 'error')
+      content.replaceChildren(
+        createApiErrorBanner('Unable to load featured games.', () => {
+          void loadFeaturedGames(true)
+        }),
+      )
     }
-  })
+  }
 
-  track.addEventListener('pointercancel', () => {
-    isPointerActive = false
-    startTimer(remainingTime)
-  })
-
-  track.append(...cards)
-  header.append(title, controls)
-  section.append(header, track)
-
-  updateCards()
-  startTimer()
-
+  void loadFeaturedGames()
   return section
 }

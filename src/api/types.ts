@@ -111,6 +111,13 @@ export interface ApiGameDetails {
 
 export type ApiGameDetailsResponse = ApiResponse<ApiGameDetails>
 
+export interface ApiFavoriteResult {
+  isFavorited: boolean
+  likesCount: number
+}
+
+export type ApiFavoriteResponse = ApiResponse<ApiFavoriteResult>
+
 export interface ApiComment {
   commentId: string
   authorName: string
@@ -130,3 +137,22 @@ export type ApiCommentsResponse = ApiCollectionResponse<
   ApiComment,
   ApiCommentsMeta
 >
+
+export interface ApiCreateCommentBody {
+  userEmail: string
+  authorName: string
+  text: string
+}
+
+export type ApiCreateCommentResponse = ApiResponse<ApiComment>
+
+export interface ApiCommentLikeBody {
+  userEmail: string
+}
+
+export interface ApiCommentLikeResult {
+  isLikedByCurrentUser: boolean
+  likesCount: number
+}
+
+export type ApiCommentLikeResponse = ApiResponse<ApiCommentLikeResult>

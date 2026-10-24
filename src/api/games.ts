@@ -3,8 +3,9 @@ import type {
   ApiGameCategoryFilter,
   ApiGameSort,
   ApiGameDetailsResponse,
+  ApiFavoriteResponse,
 } from './types'
-import { apiRequest } from './client'
+import { apiPost, apiRequest } from './client'
 
 export interface GetGamesParams {
   page: number
@@ -41,10 +42,32 @@ export const getGames = (
 export const getGameDetails = (
   gameSlug: string,
   signal?: AbortSignal,
+  userEmail?: string,
 ): Promise<ApiGameDetailsResponse> => {
-  const endpoint = `/games/${encodeURIComponent(gameSlug)}`
+  const searchParams = new URLSearchParams()
+
+  if (userEmail) {
+    searchParams.set('userEmail', userEmail)
+  }
+
+  const query = searchParams.toString()
+  const endpoint = `/games/${encodeURIComponent(gameSlug)}${query ? `?${query}` : ''}`
 
   const response = apiRequest<ApiGameDetailsResponse>(endpoint, signal)
 
   return response
+}
+
+export const toggleGameFavorite = (
+  gameSlug: string,
+  userEmail: string,
+  signal?: AbortSignal,
+): Promise<ApiFavoriteResponse> => {
+  const endpoint = `/games/${encodeURIComponent(gameSlug)}/favorite`
+
+  return apiPost<ApiFavoriteResponse, { userEmail: string }>(
+    endpoint,
+    { userEmail },
+    signal,
+  )
 }
